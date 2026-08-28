@@ -20,6 +20,7 @@ interface PatternData {
   type: 'call_loop' | 'frequency_spike' | 'laundering_ring';
   nodeIds: string[];
   severity: 'low' | 'medium' | 'critical';
+  description?: string;
 }
 
 interface GraphCanvasProps {
@@ -123,7 +124,7 @@ function NodeDetailPanel({ node, connectedCount, patterns, onClose }: NodeDetail
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          shrink: 0,
+          flexShrink: 0,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

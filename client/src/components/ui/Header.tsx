@@ -54,7 +54,11 @@ export function Header({
         {onToggleLeftSidebar && (
           <button
             onClick={onToggleLeftSidebar}
-            className="md:hidden p-1 rounded bg-panel-alt border border-border-default text-text-muted hover:text-accent transition-colors"
+            className={`md:hidden p-1 rounded border transition-colors ${
+              leftSidebarOpen
+                ? 'bg-accent/20 border-accent/40 text-accent'
+                : 'bg-panel-alt border-border-default text-text-muted hover:text-accent'
+            }`}
             title="Toggle filters"
           >
             <List className="w-4 h-4" />
@@ -167,7 +171,11 @@ export function Header({
         {onToggleRightSidebar && (
           <button
             onClick={onToggleRightSidebar}
-            className="md:hidden p-1 rounded bg-panel-alt border border-border-default text-text-muted hover:text-accent transition-colors ml-1"
+            className={`md:hidden p-1 rounded border transition-colors ml-1 ${
+              rightSidebarOpen
+                ? 'bg-accent/20 border-accent/40 text-accent'
+                : 'bg-panel-alt border-border-default text-text-muted hover:text-accent'
+            }`}
             title="Toggle suspects"
           >
             <Users className="w-4 h-4" />

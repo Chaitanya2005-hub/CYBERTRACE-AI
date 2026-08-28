@@ -31,6 +31,13 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
+// ─── Static Frontend Serving (for Render / Production) ───
+const clientDistPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(clientDistPath)) {
+  console.log(`📁 Serving frontend build from ${clientDistPath}`);
+  app.use(express.static(clientDistPath));
+}
+
 // ─── In-memory store ───
 let cdrRecords: CallDetailRecord[] = [];
 let finTransactions: FinancialTransaction[] = [];
@@ -232,6 +239,14 @@ app.get('/api/report/:caseId', (req, res) => {
   res.setHeader('Content-Disposition', `attachment; filename="cyber-trace-report-demo.${extension}"`);
   res.send(reportContent);
 });
+
+// SPA fallback for frontend routing
+if (fs.existsSync(clientDistPath)) {
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
 
 // ─── Start ───
 const PORT = process.env.PORT || 3001;

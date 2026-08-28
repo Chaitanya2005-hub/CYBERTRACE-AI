@@ -38,6 +38,15 @@ function App() {
   const [showDemoDrawer, setShowDemoDrawer] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [showAllPatterns, setShowAllPatterns] = useState(true);
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+
+  // Auto-open RightSidebar when a node is selected on mobile
+  useEffect(() => {
+    if (selectedNodeId) {
+      setRightSidebarOpen(true);
+    }
+  }, [selectedNodeId]);
 
   // Check auth state on mount
   useEffect(() => {
@@ -344,7 +353,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-base text-text-primary overflow-hidden">
+    <div className="h-[100dvh] flex flex-col bg-base text-text-primary overflow-hidden">
       <Header
         caseName={caseName}
         caseId={caseId}
@@ -358,9 +367,13 @@ function App() {
         user={user}
         onLogout={handleLogout}
         onSearchNode={!!graphData ? handleSearchNode : undefined}
+        onToggleLeftSidebar={() => setLeftSidebarOpen(!leftSidebarOpen)}
+        onToggleRightSidebar={() => setRightSidebarOpen(!rightSidebarOpen)}
+        leftSidebarOpen={leftSidebarOpen}
+        rightSidebarOpen={rightSidebarOpen}
       />
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         <LeftSidebar
           caseId={caseId}
           minTimestamp={minTimestamp}
@@ -371,6 +384,8 @@ function App() {
           onUpload={handleUpload}
           isUploading={isUploading}
           meta={graphData?.meta ?? null}
+          isOpen={leftSidebarOpen}
+          onClose={() => setLeftSidebarOpen(false)}
         />
 
         {/* Center: graph canvas */}
@@ -396,6 +411,8 @@ function App() {
           onSelectNode={setSelectedNodeId}
           onFilterPatterns={handleFilterPatterns}
           showAllPatterns={showAllPatterns}
+          isOpen={rightSidebarOpen}
+          onClose={() => setRightSidebarOpen(false)}
         />
       </div>
 

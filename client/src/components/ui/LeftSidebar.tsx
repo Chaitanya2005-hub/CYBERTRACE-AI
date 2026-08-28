@@ -17,6 +17,8 @@ interface LeftSidebarProps {
     nodeCount: number;
     edgeCount: number;
   } | null;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function LeftSidebar({
@@ -29,6 +31,8 @@ export function LeftSidebar({
   onUpload,
   isUploading,
   meta,
+  isOpen = false,
+  onClose,
 }: LeftSidebarProps) {
   const cdrInputRef = useRef<HTMLInputElement>(null);
   const finInputRef = useRef<HTMLInputElement>(null);
@@ -50,10 +54,36 @@ export function LeftSidebar({
   };
 
   return (
-    <aside className="w-64 shrink-0 bg-panel border-r border-border-default flex flex-col overflow-y-auto">
-      {/* Upload section */}
-      <div className="p-3 border-b border-border-default">
-        <h3 className="text-[11px] font-display font-semibold text-text-muted uppercase tracking-wider mb-2">
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div
+          onClick={onClose}
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
+        />
+      )}
+
+      <aside
+        className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-panel border-r border-border-default flex flex-col overflow-y-auto transition-transform duration-300 md:translate-x-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Mobile Header with close button */}
+        <div className="md:hidden flex items-center justify-between p-3 border-b border-border-default">
+          <span className="text-xs font-display font-bold text-text-primary uppercase tracking-wider">
+            Filters & Ingestion
+          </span>
+          <button
+            onClick={onClose}
+            className="text-text-muted hover:text-text-primary p-1 text-sm"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Upload section */}
+        <div className="p-3 border-b border-border-default">
+          <h3 className="text-[11px] font-display font-semibold text-text-muted uppercase tracking-wider mb-2">
           Data Upload
         </h3>
 
@@ -195,5 +225,6 @@ export function LeftSidebar({
         )}
       </div>
     </aside>
+  </>
   );
 }

@@ -24,24 +24,53 @@ interface EdgeAccumulator {
   timestamps: string[];
 }
 
-// ─── Degree centrality ───────────────────────────────────────────────────────
+// ─── Relative degree centrality & Risk assignment ──────────────────────────────
 
-function computeCentrality(nodes: Map<string, NodeRecord>): Map<string, number> {
-  const totalNodes = nodes.size;
-  if (totalNodes === 0) return new Map();
-
+function computeRelativeCentrality(nodes: Map<string, NodeRecord>): {
+  centralityMap: Map<string, number>;
+  maxConnections: number;
+} {
   const centralityMap = new Map<string, number>();
-  for (const [id, record] of nodes) {
-    centralityMap.set(id, record.connections.size / (totalNodes - 1 || 1));
+  if (nodes.size === 0) return { centralityMap, maxConnections: 1 };
+
+  let maxConn = 1;
+  for (const record of nodes.values()) {
+    if (record.connections.size > maxConn) {
+      maxConn = record.connections.size;
+    }
   }
-  return centralityMap;
+
+  for (const [id, record] of nodes) {
+    // Relative centrality normalized against max connections in the dataset (0.0 to 1.0)
+    centralityMap.set(id, record.connections.size / maxConn);
+  }
+
+  return { centralityMap, maxConnections: maxConn };
 }
 
-function riskFromCentrality(centrality: number, totalNodes: number): RiskLevel {
-  if (totalNodes === 0) return 'low';
-  if (centrality > 0.15) return 'critical';
-  if (centrality > 0.07) return 'medium';
-  return 'low';
+/**
+ * Assign risk levels to the top displayed nodes by PERCENTILE rank
+ * so the UI displays a clear, dynamic breakdown:
+ * Top 10%  → critical (e.g. 50 nodes)
+ * Next 30% → medium   (e.g. 150 nodes)
+ * Rest     → low      (e.g. 300 nodes)
+ */
+function assignRiskLevels(displayedNodes: SuspectNode[]): void {
+  if (displayedNodes.length === 0) return;
+
+  const criticalCut = Math.max(1, Math.ceil(displayedNodes.length * 0.10)); // Top 10%
+  const mediumCut   = Math.max(2, Math.ceil(displayedNodes.length * 0.40)); // Next 30%
+
+  for (let i = 0; i < displayedNodes.length; i++) {
+    const node = displayedNodes[i]!;
+    if (i < criticalCut) {
+      node.riskLevel = 'critical';
+    } else if (i < mediumCut) {
+      node.riskLevel = 'medium';
+    } else {
+      node.riskLevel = 'low';
+    }
+  }
 }
 
 // ─── Orchestrator detection ──────────────────────────────────────────────────
@@ -92,43 +121,29 @@ function findClusters(undirected: Map<string, Set<string>>): string[][] {
 }
 
 function identifyOrchestrators(
-  centralityMap: Map<string, number>,
-  undirected: Map<string, Set<string>>
+  nodes: Map<string, NodeRecord>,
+  maxConnections: number
 ): Set<string> {
-  const clusters = findClusters(undirected);
-  const nodeClusterMap = new Map<string, Set<number>>();
-
-  clusters.forEach((cluster, idx) => {
-    for (const node of cluster) {
-      if (!nodeClusterMap.has(node)) nodeClusterMap.set(node, new Set());
-      nodeClusterMap.get(node)!.add(idx);
-    }
-  });
-
   const orchestrators = new Set<string>();
-  const sortedByCentrality = [...centralityMap.entries()]
-    .sort((a, b) => b[1] - a[1]);
-  const topN = Math.max(3, Math.floor(sortedByCentrality.length * 0.05));
+  if (nodes.size === 0) return orchestrators;
 
-  for (let i = 0; i < Math.min(topN, sortedByCentrality.length); i++) {
-    const [nodeId] = sortedByCentrality[i]!;
-    const clusterCount = nodeClusterMap.get(nodeId)?.size ?? 0;
-    if (clusterCount >= 2) {
-      orchestrators.add(nodeId);
-    }
-  }
+  // Threshold: nodes with connection count >= 40% of dataset max (minimum 5 connections)
+  const threshold = Math.max(5, Math.floor(maxConnections * 0.40));
 
-  // Also flag any node with centrality above a high absolute threshold
-  for (const [nodeId, centrality] of centralityMap) {
-    if (centrality > 0.25) {
-      orchestrators.add(nodeId);
+  for (const [id, record] of nodes) {
+    if (record.connections.size >= threshold) {
+      orchestrators.add(id);
     }
   }
 
   return orchestrators;
 }
 
+
 // ─── Call loop detection (DFS, bounded 3–6 node cycles) ──────────────────────
+// NOTE: Only runs on top-N high-degree nodes to keep O(n) manageable at scale.
+const LOOP_MAX_NODES = 200;  // only inspect top-200 high-degree nodes
+const LOOP_MAX_RESULTS = 500; // hard cap on returned loops
 
 function detectCallLoops(
   edges: Map<string, Map<string, EdgeAccumulator>>
@@ -138,7 +153,15 @@ function detectCallLoops(
   const maxLen = 6;
   const minLen = 3;
 
+  // Rank nodes by degree; only DFS from top-N to keep runtime bounded
+  const ranked = [...edges.entries()]
+    .sort((a, b) => b[1].size - a[1].size)
+    .slice(0, LOOP_MAX_NODES)
+    .map(([id]) => id);
+  const candidateSet = new Set(ranked);
+
   const dfs = (start: string, current: string, path: string[]) => {
+    if (loops.length >= LOOP_MAX_RESULTS) return;
     if (path.length > maxLen) return;
     if (path.length >= minLen && edges.get(current)?.has(start)) {
       loops.push([...path]);
@@ -148,20 +171,23 @@ function detectCallLoops(
     visited.add(current);
     const neighbors = edges.get(current);
     if (neighbors) {
-    for (const neighbor of neighbors.keys()) {
-      if (!visited.has(neighbor) || (neighbor === start && path.length >= minLen)) {
-        if (neighbor === start && path.length >= minLen) {
-          loops.push([...path]);
-        } else if (!visited.has(neighbor)) {
-          dfs(start, neighbor, [...path, neighbor]);
+      for (const neighbor of neighbors.keys()) {
+        if (loops.length >= LOOP_MAX_RESULTS) break;
+        if (!visited.has(neighbor) || (neighbor === start && path.length >= minLen)) {
+          if (neighbor === start && path.length >= minLen) {
+            loops.push([...path]);
+          } else if (!visited.has(neighbor)) {
+            dfs(start, neighbor, [...path, neighbor]);
+          }
         }
       }
-    }
     }
     visited.delete(current);
   };
 
-  for (const node of edges.keys()) {
+  for (const node of ranked) {
+    if (loops.length >= LOOP_MAX_RESULTS) break;
+    if (!candidateSet.has(node)) continue;
     visited.clear();
     dfs(node, node, [node]);
   }
@@ -224,13 +250,14 @@ function detectLaunderingRings(
     }
   };
 
-  const allNodes = new Set<string>();
-  for (const [src, targets] of edges) {
-    allNodes.add(src);
-    for (const target of targets.keys()) allNodes.add(target);
-  }
+  // Only run from top-degree nodes to keep runtime bounded
+  const rankedFin = [...edges.entries()]
+    .sort((a, b) => b[1].size - a[1].size)
+    .slice(0, 150)
+    .map(([id]) => id);
 
-  for (const node of allNodes) {
+  for (const node of rankedFin) {
+    if (rings.length >= 300) break;
     const visited = new Set<string>([node]);
     dfs(node, node, [node], Infinity, [], visited);
   }
@@ -325,12 +352,38 @@ export function buildGraph(
     edge.timestamps.push(tx.timestamp);
   }
 
-  // Compute centrality
-  const centralityMap = computeCentrality(nodes);
+  // Compute relative degree centrality (0.0 to 1.0) normalized to max connections
+  const { centralityMap, maxConnections } = computeRelativeCentrality(nodes);
 
-  // Identify orchestrators
-  const undirected = buildUndirectedEdges(cdrEdges, finEdges);
-  const orchestrators = identifyOrchestrators(centralityMap, undirected);
+  // Identify orchestrator nodes
+  const orchestrators = identifyOrchestrators(nodes, maxConnections);
+
+  // Build suspect nodes
+  const suspectNodes: SuspectNode[] = [];
+  for (const [id] of nodes) {
+    const centrality = centralityMap.get(id) ?? 0;
+    suspectNodes.push({
+      id,
+      degreeCentrality: centrality,
+      riskLevel: 'low', // placeholder, computed after slicing top 500
+      isOrchestrator: orchestrators.has(id),
+    });
+  }
+
+  // Sort descending by centrality and slice top 500 nodes
+  const MAX_GRAPH_NODES = 500;
+  const sortedNodes = suspectNodes.sort((a, b) => b.degreeCentrality - a.degreeCentrality);
+  const topNodes = sortedNodes.slice(0, MAX_GRAPH_NODES);
+
+  // Assign risk levels (Critical / Medium / Low) directly on the 500 displayed nodes
+  assignRiskLevels(topNodes);
+
+  // Upgrade Orchestrator nodes to at least 'medium' if they were 'low'
+  for (const node of topNodes) {
+    if (node.isOrchestrator && node.riskLevel === 'low') {
+      node.riskLevel = 'medium';
+    }
+  }
 
   // Build merged edge map
   const mergedEdges = new Map<string, Map<string, { weight: number; frequency: number; timestamps: string[] }>>();
@@ -382,21 +435,14 @@ export function buildGraph(
     }
   }
 
-  // Build suspect nodes
-  const suspectNodes: SuspectNode[] = [];
-  for (const [id, record] of nodes) {
-    const centrality = centralityMap.get(id) ?? 0;
-    suspectNodes.push({
-      id,
-      degreeCentrality: centrality,
-      riskLevel: riskFromCentrality(centrality, nodes.size),
-      isOrchestrator: orchestrators.has(id),
-    });
-  }
+  const topNodeIds = new Set(topNodes.map(n => n.id));
+  const filteredEdges = linkEdges
+    .sort((a, b) => b.frequency - a.frequency)
+    .filter(e => topNodeIds.has(e.source) && topNodeIds.has(e.target));
 
   return {
-    nodes: suspectNodes.sort((a, b) => b.degreeCentrality - a.degreeCentrality),
-    edges: linkEdges.sort((a, b) => b.frequency - a.frequency),
+    nodes: topNodes,
+    edges: filteredEdges,
   };
 }
 

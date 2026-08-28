@@ -2,6 +2,10 @@
   "version": 2,
   "builds": [
     {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    },
+    {
       "src": "client/package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -11,12 +15,15 @@
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/api/index.ts"
+    },
+    {
       "src": "/(.*)",
       "dest": "/client/$1"
     }
   ],
-  "installCommand": "cd client && npm install",
+  "installCommand": "npm install && cd client && npm install",
   "buildCommand": "cd client && npm run build",
-  "outputDirectory": "client/dist",
-  "framework": "vite"
+  "outputDirectory": "client/dist"
 }

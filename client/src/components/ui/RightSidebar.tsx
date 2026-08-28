@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CaretDown, CaretRight, Users, Warning, Eye } from '@phosphor-icons/react';
 import { RiskBadge } from './RiskBadge';
+import { CountUp } from './CountUp';
 
 
 interface NodeData {
@@ -76,15 +77,15 @@ export function RightSidebar({
         <div className="flex gap-3 text-[11px] font-mono">
           <div className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-risk-critical" />
-            <span className="text-risk-critical">{criticalCount}</span>
+            <span className="text-risk-critical"><CountUp end={criticalCount} /></span>
           </div>
           <div className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-risk-medium" />
-            <span className="text-risk-medium">{mediumCount}</span>
+            <span className="text-risk-medium"><CountUp end={mediumCount} /></span>
           </div>
           <div className="flex items-center gap-1">
             <Warning className="w-3 h-3 text-risk-critical" weight="fill" />
-            <span className="text-text-muted">{orchestratorCount} orchestrator{orchestratorCount !== 1 ? 's' : ''}</span>
+            <span className="text-text-muted"><CountUp end={orchestratorCount} /> orchestrator{orchestratorCount !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </div>

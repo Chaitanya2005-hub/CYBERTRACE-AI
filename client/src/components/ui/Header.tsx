@@ -1,4 +1,5 @@
-import { Shield, DownloadSimple, PlayCircle, ArrowCounterClockwise, Lightning, SignOut, User } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { Shield, DownloadSimple, PlayCircle, ArrowCounterClockwise, Lightning, SignOut, User, MagnifyingGlass } from '@phosphor-icons/react';
 
 interface HeaderProps {
   caseName: string | null;
@@ -12,6 +13,7 @@ interface HeaderProps {
   isBypassMode: boolean;
   user: { id: string; email: string } | null;
   onLogout: () => void;
+  onSearchNode?: (query: string) => void;
 }
 
 export function Header({
@@ -26,7 +28,17 @@ export function Header({
   isBypassMode,
   user,
   onLogout,
+  onSearchNode,
 }: HeaderProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onSearchNode && searchQuery.trim()) {
+      onSearchNode(searchQuery.trim());
+    }
+  };
+
   return (
     <header className="flex items-center justify-between px-4 py-2.5 bg-panel border-b border-border-default shrink-0">
       {/* Left — brand */}
@@ -52,6 +64,22 @@ export function Header({
           </div>
         )}
       </div>
+
+      {/* Center — search */}
+      {onSearchNode && (
+        <form onSubmit={handleSearch} className="flex items-center gap-2">
+          <div className="relative">
+            <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search phone number or account..."
+              className="w-64 pl-8 pr-3 py-1.5 bg-panel-alt border border-border-default rounded text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+            />
+          </div>
+        </form>
+      )}
 
       {/* Right — actions */}
       <div className="flex items-center gap-2">

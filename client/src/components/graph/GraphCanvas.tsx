@@ -1,5 +1,6 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import cytoscape from 'cytoscape';
+import { ContextMenu } from '../ui/ContextMenu';
 
 interface GraphNode {
   id: string;
@@ -27,6 +28,7 @@ interface GraphCanvasProps {
   patterns: PatternData[];
   selectedNodeId: string | null;
   onSelectNode: (id: string | null) => void;
+  onUpload?: (file: File, type: 'cdr' | 'transactions') => void;
 }
 
 const RISK_COLORS: Record<string, string> = {
@@ -77,9 +79,13 @@ export function GraphCanvas({
   patterns,
   selectedNodeId,
   onSelectNode,
+  onUpload,
 }: GraphCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<any>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragFileType, setDragFileType] = useState<'cdr' | 'transactions' | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
   // Stable ref so event handlers never become stale without triggering graph reinit
   const onSelectNodeRef = useRef(onSelectNode);
   useEffect(() => { onSelectNodeRef.current = onSelectNode; }, [onSelectNode]);
@@ -234,6 +240,13 @@ export function GraphCanvas({
       onSelectNodeRef.current(id === selectedNodeId ? null : id);
     });
 
+    // Right-click to show context menu
+    cy.on('cxttap', 'node', (evt: any) => {
+      const id = evt.target.id();
+      const pos = evt.renderedPosition;
+      setContextMenu({ x: pos.x, y: pos.y, nodeId: id });
+    });
+
     // Click background to deselect
     cy.on('tap', (evt: any) => {
       if (evt.target === cy) {
@@ -286,9 +299,61 @@ export function GraphCanvas({
     }
   }, [selectedNodeId]);
 
+  // Drag and drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    
+    // Detect file type from drag data
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const fileName = files[0].name.toLowerCase();
+      if (fileName.includes('cdr') || fileName.includes('call')) {
+        setDragFileType('cdr');
+      } else if (fileName.includes('transaction') || fileName.includes('financial') || fileName.includes('money')) {
+        setDragFileType('transactions');
+      }
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    setDragFileType(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && onUpload && dragFileType) {
+      onUpload(files[0], dragFileType);
+    }
+    
+    setDragFileType(null);
+  }, [onUpload, dragFileType]);
+
   if (nodes.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-base">
+      <div 
+        className="flex-1 flex items-center justify-center bg-base relative"
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {isDragging && (
+          <div className="absolute inset-0 bg-accent/10 border-2 border-dashed border-accent flex items-center justify-center z-10">
+            <div className="text-center">
+              <p className="text-sm font-semibold text-accent mb-2">
+                Drop {dragFileType || 'file'} here
+              </p>
+              <p className="text-xs text-text-muted">
+                {dragFileType === 'cdr' ? 'Call Detail Records' : dragFileType === 'transactions' ? 'Financial Transactions' : 'Data file'}
+              </p>
+            </div>
+          </div>
+        )}
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-panel border border-border-default flex items-center justify-center">
             <svg className="w-8 h-8 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -305,12 +370,46 @@ export function GraphCanvas({
           <p className="text-xs text-text-muted mt-1">
             Upload a CSV or click "Pre-load Sample Network" to start
           </p>
+          {onUpload && (
+            <p className="text-xs text-accent mt-3">
+              Or drag & drop a CDR or transaction file here
+            </p>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="flex-1 bg-base" />
+    <div 
+      ref={containerRef} 
+      className="flex-1 bg-base relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 bg-accent/10 border-2 border-dashed border-accent flex items-center justify-center z-10 pointer-events-none">
+          <div className="text-center">
+            <p className="text-sm font-semibold text-accent mb-2">
+              Drop {dragFileType || 'file'} here
+            </p>
+            <p className="text-xs text-text-muted">
+              {dragFileType === 'cdr' ? 'Call Detail Records' : dragFileType === 'transactions' ? 'Financial Transactions' : 'Data file'}
+            </p>
+          </div>
+        </div>
+      )}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          nodeId={contextMenu.nodeId}
+          onClose={() => setContextMenu(null)}
+          onShowConnections={(nodeId) => onSelectNode(nodeId)}
+          onHideNode={() => onSelectNode(null)}
+        />
+      )}
+    </div>
   );
 }

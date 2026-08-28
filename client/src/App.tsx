@@ -276,6 +276,59 @@ function App() {
     };
   }, []);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Esc to deselect node
+      if (e.key === 'Escape' && selectedNodeId) {
+        setSelectedNodeId(null);
+        e.preventDefault();
+      }
+      
+      // Delete to remove selected node from view
+      if (e.key === 'Delete' && selectedNodeId) {
+        setSelectedNodeId(null);
+        e.preventDefault();
+      }
+      
+      // Ctrl+F to focus search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+          e.preventDefault();
+        }
+      }
+      
+      // 1-9 to switch between saved views (when views are implemented)
+      if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.metaKey) {
+        // TODO: Implement view switching
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNodeId]);
+
+  // Handle node search
+  const handleSearchNode = useCallback((query: string) => {
+    if (!graphData) return;
+    
+    const matchingNode = graphData.nodes.find(node => 
+      node.id.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    if (matchingNode) {
+      setSelectedNodeId(matchingNode.id);
+    } else {
+      addToast({
+        id: Date.now().toString(),
+        type: 'error',
+        text: `No node found matching "${query}"`
+      });
+    }
+  }, [graphData, addToast]);
+
   // Show loading state while checking auth
   if (isLoadingAuth) {
     return (
@@ -307,6 +360,7 @@ function App() {
         isBypassMode={isBypassMode}
         user={user}
         onLogout={handleLogout}
+        onSearchNode={!!graphData ? handleSearchNode : undefined}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -333,6 +387,7 @@ function App() {
               patterns={graphData?.patterns ?? []}
               selectedNodeId={selectedNodeId}
               onSelectNode={setSelectedNodeId}
+              onUpload={handleUpload}
             />
           )}
         </div>

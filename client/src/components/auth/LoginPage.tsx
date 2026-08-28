@@ -19,8 +19,11 @@ export function LoginPage({ onLoginSuccess, showToast }: LoginPageProps) {
     e.preventDefault();
     setIsLoading(true);
 
+    console.log('Form submit:', { email, isSignUp });
+
     try {
       if (isSignUp) {
+        console.log('Attempting signup...');
         await signUp(email, password);
         showToast({
           id: Date.now().toString(),
@@ -29,29 +32,21 @@ export function LoginPage({ onLoginSuccess, showToast }: LoginPageProps) {
         });
         setIsSignUp(false);
       } else {
+        console.log('Attempting signin...');
         const user = await signIn(email, password);
+        console.log('Signin success:', user);
         onLoginSuccess({
           id: user.id,
           email: user.email!,
         });
       }
     } catch (error: any) {
-      // If sign-in fails due to invalid credentials or user not found, switch to signup
-      const errorMessage = error.message || 'Authentication failed';
-      if (errorMessage.includes('Invalid credentials') || errorMessage.includes('not found') || errorMessage.includes('Invalid login')) {
-        showToast({
-          id: Date.now().toString(),
-          type: 'info',
-          text: 'Account not found. Please create an account first.',
-        });
-        setIsSignUp(true);
-      } else {
-        showToast({
-          id: Date.now().toString(),
-          type: 'error',
-          text: errorMessage,
-        });
-      }
+      console.error('Auth error:', error);
+      showToast({
+        id: Date.now().toString(),
+        type: 'error',
+        text: error.message || 'Authentication failed',
+      });
     } finally {
       setIsLoading(false);
     }

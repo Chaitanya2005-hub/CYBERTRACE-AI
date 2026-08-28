@@ -6,7 +6,6 @@ import { DemoDrawer } from './components/ui/DemoDrawer';
 import { GraphCanvas } from './components/graph/GraphCanvas';
 import { ToastContainer, type ToastMessage } from './components/ui/Toast';
 import { GraphSkeleton } from './components/ui/SkeletonLoader';
-import { LoginPage } from './components/auth/LoginPage';
 import {
   fetchGraph,
   uploadCSV,
@@ -47,16 +46,19 @@ function App() {
 
     const checkAuth = async () => {
       try {
-        const currentUser = await getCurrentUser();
+        await getCurrentUser();
         if (mounted) {
-          // In bypass mode, if no user, show login page
-          // In production mode, use actual auth state
-          setUser(currentUser ? { id: currentUser.id, email: currentUser.email } : null);
+          // Auto-login: always set a mock user to skip login page
+          setUser({ id: 'demo-user', email: 'demo@cybertrace.local' });
           setIsLoadingAuth(false);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        if (mounted) setIsLoadingAuth(false);
+        if (mounted) {
+          // Auto-login even on error
+          setUser({ id: 'demo-user', email: 'demo@cybertrace.local' });
+          setIsLoadingAuth(false);
+        }
       }
     };
 
@@ -339,11 +341,6 @@ function App() {
         </div>
       </div>
     );
-  }
-
-  // Show login page if not authenticated
-  if (!user) {
-    return <LoginPage onLoginSuccess={setUser} showToast={addToast} />;
   }
 
   return (

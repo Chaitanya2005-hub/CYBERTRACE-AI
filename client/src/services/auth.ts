@@ -27,20 +27,31 @@ const mockUser: AuthUser = {
 };
 
 export async function signIn(email: string, password: string) {
+  console.log('signIn called:', { email, isBypassMode, hasSupabase: !!supabase });
+  
   if (isBypassMode) {
     // In bypass mode, validate basic credentials
     if (!email || !password || password.length < 6) {
       throw new Error('Invalid credentials');
     }
+    console.log('Bypass mode login successful');
     return mockUser;
   }
 
+  console.log('Attempting Supabase sign in...');
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  if (error) throw error;
+  console.log('Supabase response:', { data, error });
+
+  if (error) {
+    console.error('Sign in error:', error);
+    throw error;
+  }
+  
+  console.log('Sign in successful:', data.user);
   return data.user;
 }
 

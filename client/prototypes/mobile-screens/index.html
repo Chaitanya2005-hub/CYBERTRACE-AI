@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber Trace AI — Mobile Concept</title>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<style>
+  @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=space-grotesk@500,600,700&f[]=jetbrains-mono@400,500,600&display=swap');
+
+  :root {
+    --base: #05080d;
+    --panel: #0c131e;
+    --panel-alt: #101a29;
+    --border: #1c2a3d;
+    --text: #dce6f2;
+    --muted: #7d90a8;
+    --accent: #2dd4e0;
+    --accent-dim: #1a8b93;
+    --critical: #ff5673;
+    --medium: #ffb238;
+    --low: #35d399;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Satoshi', sans-serif;
+    background: #020408;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Page header ─── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .page-header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ─── Phone mockup ─── */
+  .phone {
+    width: 320px;
+    height: 640px;
+    border-radius: 36px;
+    border: 2.5px solid #1a1f2e;
+    background: var(--base);
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.04) inset,
+      0 20px 60px rgba(0,0,0,0.5),
+      0 4px 16px rgba(0,0,0,0.3);
+    flex-shrink: 0;
+  }
+
+  .phone-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 28px;
+    background: #0a0e16;
+    border-radius: 0 0 16px 16px;
+    z-index: 10;
+  }
+
+  .phone-status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text);
+    z-index: 5;
+  }
+
+  .phone-home-indicator {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    z-index: 10;
+  }
+
+  .phone-screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+  .phone-screen::-webkit-scrollbar { display: none; }
+
+  /* ─── Screen layouts ─── */
+  .screen { padding: 52px 16px 32px; min-height: 100%; }
+
+  /* Screen 1: Case Dashboard */
+  .case-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .case-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-dim);
+    background: rgba(45,212,224,0.08);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(45,212,224,0.15);
+  }
+  .case-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .case-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  /* Metric cards */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .metric-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .metric-label {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .metric-value--accent { color: var(--accent); }
+  .metric-value--critical { color: var(--critical); }
+  .metric-value--medium { color: var(--medium); }
+
+  /* Alert list */
+  .section-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .alert-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .alert-dot--critical { background: var(--critical); }
+  .alert-dot--medium { background: var(--medium); }
+  .alert-dot--low { background: var(--low); }
+  .alert-content { flex: 1; }
+  .alert-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .alert-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .alert-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: 8px;
+    z-index: 5;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 9px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .nav-item--active { color: var(--accent); }
+  .nav-icon { width: 20px; height: 20px; }
+
+  /* Screen 2: Network Graph (mobile) */
+  .graph-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .graph-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .filter-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: transparent;
+  }
+  .filter-chip--active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(45,212,224,0.06);
+  }
+
+  .graph-canvas {
+    width: 100%;
+    height: 280px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  /* SVG graph nodes */
+  .graph-canvas svg { width: 100%; height: 100%; }
+
+  .node-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .node-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .node-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .node-avatar--critical { background: rgba(255,86,115,0.12); color: var(--critical); border: 1px solid rgba(255,86,115,0.25); }
+  .node-avatar--medium { background: rgba(255,178,56,0.12); color: var(--medium); border: 1px solid rgba(255,178,56,0.25); }
+  .node-avatar--low { background: rgba(53,211,153,0.12); color: var(--low); border: 1px solid rgba(53,211,153,0.25); }
+  .node-info { flex: 1; min-width: 0; }
+  .node-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .node-meta {
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .node-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+  .node-badge--critical { background: rgba(255,86,115,0.12); color: var(--critical); border: 1px solid rgba(255,86,115,0.2); }
+  .node-badge--medium { background: rgba(255,178,56,0.12); color: var(--medium); border: 1px solid rgba(255,178,56,0.2); }
+  .node-badge--orchestrator { background: rgba(255,86,115,0.15); color: var(--critical); border: 1px solid rgba(255,86,115,0.3); }
+
+  /* Screen 3: Node Detail */
+  .detail-hero {
+    text-align: center;
+    padding: 16px 0 20px;
+  }
+  .detail-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: rgba(255,86,115,0.1);
+    border: 2px solid var(--critical);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--critical);
+  }
+  .detail-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .detail-type {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .detail-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .detail-stat {
+    text-align: center;
+    padding: 10px 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .detail-stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .detail-stat-label {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+
+  .detail-section { margin-bottom: 16px; }
+  .detail-section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .connection-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 4px;
+  }
+  .connection-arrow {
+    color: var(--accent);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .connection-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text);
+    flex: 1;
+  }
+  .connection-freq {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* Screen 4: Report Export */
+  .report-preview {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .report-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .report-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .report-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .report-row:last-child { border-bottom: none; }
+  .report-label { color: var(--muted); }
+  .report-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+  }
+
+  .export-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: opacity 150ms ease-out;
+  }
+  .export-btn:active { opacity: 0.8; }
+  .export-btn--primary {
+    background: var(--accent);
+    color: var(--base);
+  }
+  .export-btn--secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  /* ─── Picker (verbatim from PICKER.md) ─── */
+  .proto-picker {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2147483647;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(10, 10, 10, 0.82);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    backdrop-filter: blur(12px) saturate(1.4);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 8px 24px rgba(0,0,0,0.24), 0 2px 6px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+  .proto-picker-highlight {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    will-change: transform;
+  }
+  .proto-picker[data-ready] .proto-picker-highlight {
+    transition: transform 250ms cubic-bezier(0.23,1,0.32,1), width 250ms cubic-bezier(0.23,1,0.32,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .proto-picker[data-ready] .proto-picker-highlight { transition: none; }
+  }
+  .proto-picker-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(255,255,255,0.55);
+    font: inherit;
+    cursor: pointer;
+    transition: color 150ms ease-out;
+  }
+  .proto-picker-item:hover { color: rgba(255,255,255,0.85); }
+  .proto-picker-item:active { transform: scale(0.97); }
+  .proto-picker-item:focus-visible { outline: 2px solid rgba(255,255,255,0.4); outline-offset: 2px; }
+  .proto-picker-item[data-active] { color: #fff; }
+  .proto-picker-divider { width: 1px; height: 16px; margin: 0 4px; background: rgba(255,255,255,0.12); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CYBER TRACE AI — MOBILE</h1>
+  <p>Companion app concept · 4 screens · iOS-native premium</p>
+</div>
+
+<div id="phone-container" style="position:relative;"></div>
+
+<!-- Picker -->
+<nav class="proto-picker" aria-label="Prototype variants">
+  <span class="proto-picker-highlight" aria-hidden="true"></span>
+  <button class="proto-picker-item" data-active aria-current="true">Dashboard</button>
+  <button class="proto-picker-item">Network</button>
+  <button class="proto-picker-item">Detail</button>
+  <button class="proto-picker-item">Report</button>
+</nav>
+
+<script>
+const SCREENS = [
+  // ─── Screen 1: Case Dashboard ───
+  () => `
+    <div class="screen">
+      <div class="case-header">
+        <div>
+          <div class="case-title">Operation Blacknet</div>
+          <div class="case-subtitle">CDR + Financial Analysis · 3 days ago</div>
+        </div>
+        <span class="case-id">a3f7c291</span>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Nodes</div>
+          <div class="metric-value metric-value--accent">247</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Connections</div>
+          <div class="metric-value">1,432</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Critical</div>
+          <div class="metric-value metric-value--critical">12</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Patterns</div>
+          <div class="metric-value metric-value--medium">5</div>
+        </div>
+      </div>
+
+      <div class="section-label">Flagged Alerts</div>
+
+      <div class="alert-item">
+        <div class="alert-dot alert-dot--critical"></div>
+        <div class="alert-content">
+          <div class="alert-type">ORCHESTRATOR IDENTIFIED</div>
+          <div class="alert-desc">+91 6595 376 178 bridges 4 clusters with centrality 0.34</div>
+        </div>
+        <div class="alert-time">2h</div>
+      </div>
+
+      <div class="alert-item">
+        <div class="alert-dot alert-dot--critical"></div>
+        <div class="alert-content">
+          <div class="alert-type">LAUNDERING RING</div>
+          <div class="alert-desc">5-account chain with 10% decay per hop, ₹10L total</div>
+        </div>
+        <div class="alert-time">2h</div>
+      </div>
+
+      <div class="alert-item">
+        <div class="alert-dot alert-dot--medium"></div>
+        <div class="alert-content">
+          <div class="alert-type">CALL LOOP</div>
+          <div class="alert-desc">4-number closed cycle detected in Tower 47 cluster</div>
+        </div>
+        <div class="alert-time">2h</div>
+      </div>
+
+      <div class="alert-item">
+        <div class="alert-dot alert-dot--medium"></div>
+        <div class="alert-content">
+          <div class="alert-type">FREQUENCY SPIKE</div>
+          <div class="alert-desc">+91 7906 113 910 — 15 unique contacts in 12 minutes</div>
+        </div>
+        <div class="alert-time">1h</div>
+      </div>
+
+      <div style="height:64px"></div>
+    </div>
+    <div class="bottom-nav">
+      <a class="nav-item nav-item--active" href="#">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        Cases
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="16.5"/></svg>
+        Graph
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        Reports
+      </a>
+      <a class="nav-item" href="#">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Settings
+      </a>
+    </div>
+  `,
+
+  // ─── Screen 2: Network Graph ───
+  () => `
+    <div class="screen">
+      <div class="graph-header">
+        <div class="graph-title">Network Graph</div>
+        <span class="filter-chip filter-chip--active">All time</span>
+      </div>
+
+      <div class="graph-canvas">
+        <svg viewBox="0 0 300 260">
+          <!-- Edges -->
+          <line x1="80" y1="80" x2="160" y2="120" stroke="#1c2a3d" stroke-width="1.5" opacity="0.6"/>
+          <line x1="160" y1="120" x2="220" y2="70" stroke="#1c2a3d" stroke-width="1" opacity="0.4"/>
+          <line x1="160" y1="120" x2="130" y2="200" stroke="#1c2a3d" stroke-width="2" opacity="0.7"/>
+          <line x1="130" y1="200" x2="220" y2="180" stroke="#ff5673" stroke-width="1.5" opacity="0.5" stroke-dasharray="4,3"/>
+          <line x1="80" y1="80" x2="50" y2="160" stroke="#1c2a3d" stroke-width="1" opacity="0.3"/>
+          <line x1="220" y1="70" x2="260" y2="140" stroke="#1c2a3d" stroke-width="1" opacity="0.3"/>
+          <line x1="50" y1="160" x2="130" y2="200" stroke="#ffb238" stroke-width="1" opacity="0.4"/>
+          <line x1="220" y1="180" x2="260" y2="140" stroke="#1c2a3d" stroke-width="1" opacity="0.3"/>
+
+          <!-- Orchestrator node (large, critical border) -->
+          <circle cx="160" cy="120" r="18" fill="#1a0a10" stroke="#ff5673" stroke-width="2.5"/>
+          <text x="160" y="124" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#ff5673" font-weight="600">ORCH</text>
+
+          <!-- Critical node -->
+          <circle cx="80" cy="80" r="12" fill="#101a29" stroke="#ff5673" stroke-width="2"/>
+          <text x="80" y="83" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" fill="#dce6f2">+9165</text>
+
+          <!-- Medium nodes -->
+          <circle cx="220" cy="70" r="10" fill="#101a29" stroke="#ffb238" stroke-width="1.5"/>
+          <circle cx="130" cy="200" r="11" fill="#101a29" stroke="#ffb238" stroke-width="1.5"/>
+          <circle cx="220" cy="180" r="9" fill="#101a29" stroke="#ffb238" stroke-width="1.5"/>
+
+          <!-- Low nodes -->
+          <circle cx="50" cy="160" r="7" fill="#101a29" stroke="#35d399" stroke-width="1"/>
+          <circle cx="260" cy="140" r="6" fill="#101a29" stroke="#35d399" stroke-width="1"/>
+          <circle cx="190" cy="40" r="5" fill="#101a29" stroke="#35d399" stroke-width="1"/>
+          <circle cx="100" cy="230" r="5" fill="#101a29" stroke="#35d399" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <div class="section-label">Top Suspects</div>
+      <div class="node-list">
+        <div class="node-row">
+          <div class="node-avatar node-avatar--critical">+91</div>
+          <div class="node-info">
+            <div class="node-id">+91 6595 376 178</div>
+            <div class="node-meta">Centrality 0.34 · 47 connections</div>
+          </div>
+          <span class="node-badge node-badge--orchestrator">ORCH</span>
+        </div>
+        <div class="node-row">
+          <div class="node-avatar node-avatar--critical">+91</div>
+          <div class="node-info">
+            <div class="node-id">+91 7906 113 910</div>
+            <div class="node-meta">Centrality 0.22 · 15 contacts in 12min</div>
+          </div>
+          <span class="node-badge node-badge--critical">CRIT</span>
+        </div>
+        <div class="node-row">
+          <div class="node-avatar node-avatar--medium">103</div>
+          <div class="node-info">
+            <div class="node-id">1031 180 242</div>
+            <div class="node-meta">Centrality 0.18 · Financial hub</div>
+          </div>
+          <span class="node-badge node-badge--medium">MED</span>
+        </div>
+      </div>
+      <div style="height:64px"></div>
+    </div>
+    <div class="bottom-nav">
+      <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Cases</a>
+      <a class="nav-item nav-item--active" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="16.5"/></svg>Graph</a>
+      <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Reports</a>
+      <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+    </div>
+  `,
+
+  // ─── Screen 3: Node Detail ───
+  () => `
+    <div class="screen">
+      <div class="detail-hero">
+        <div class="detail-avatar">+91</div>
+        <div class="detail-id">+91 6595 376 178</div>
+        <div class="detail-type">Phone · Orchestrator · Critical Risk</div>
+      </div>
+
+      <div class="detail-stats">
+        <div class="detail-stat">
+          <div class="detail-stat-value">0.34</div>
+          <div class="detail-stat-label">Centrality</div>
+        </div>
+        <div class="detail-stat">
+          <div class="detail-stat-value">47</div>
+          <div class="detail-stat-label">Links</div>
+        </div>
+        <div class="detail-stat">
+          <div class="detail-stat-value" style="color:var(--critical)">4</div>
+          <div class="detail-stat-label">Clusters</div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">Top Connections</div>
+        <div class="connection-item">
+          <span class="connection-arrow">→</span>
+          <span class="connection-id">+91 9335 856 413</span>
+          <span class="connection-freq">23 calls</span>
+        </div>
+        <div class="connection-item">
+          <span class="connection-arrow">→</span>
+          <span class="connection-id">+91 7906 113 910</span>
+          <span class="connection-freq">18 calls</span>
+        </div>
+        <div class="connection-item">
+          <span class="connection-arrow">⇄</span>
+          <span class="connection-id">1031 180 242</span>
+          <span class="connection-freq">₹4.2L transfer</span>
+        </div>
+        <div class="connection-item">
+          <span class="connection-arrow">→</span>
+          <span class="connection-id">+91 8772 227 951</span>
+          <span class="connection-freq">12 calls</span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">Pattern Involvement</div>
+        <div class="alert-item" style="margin-bottom:4px">
+          <div class="alert-dot alert-dot--critical"></div>
+          <div class="alert-content">
+            <div class="alert-type">LAUNDERING RING</div>
+            <div class="alert-desc">Feeds account 9107 751 097 via 1031 180 242</div>
+          </div>
+        </div>
+        <div class="alert-item" style="margin-bottom:0">
+          <div class="alert-dot alert-dot--medium"></div>
+          <div class="alert-content">
+            <div class="alert-type">CALL LOOP BRIDGE</div>
+            <div class="alert-desc">Connects Tower 47 loop to Tower 12 cluster</div>
+          </div>
+        </div>
+      </div>
+      <div style="height:64px"></div>
+    </div>
+    <div class="bottom-nav">
+      <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Cases</a>
+      <a class="nav-item nav-item--active" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="16.5"/></svg>Graph</a>
+      <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Reports</a>
+      <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+    </div>
+  `,
+
+  // ─── Screen 4: Report Export ───
+  () => `
+    <div class="screen">
+      <div class="graph-header">
+        <div class="graph-title">Audit Report</div>
+        <span class="filter-chip">PDF</span>
+      </div>
+
+      <div class="report-preview">
+        <div class="report-title">Operation Blacknet</div>
+        <div class="report-meta">Generated 28 Aug 2026 · Case a3f7c291</div>
+        <div class="report-row">
+          <span class="report-label">Total nodes</span>
+          <span class="report-value">247</span>
+        </div>
+        <div class="report-row">
+          <span class="report-label">Total connections</span>
+          <span class="report-value">1,432</span>
+        </div>
+        <div class="report-row">
+          <span class="report-label">Critical risk</span>
+          <span class="report-value" style="color:var(--critical)">12</span>
+        </div>
+        <div class="report-row">
+          <span class="report-label">Medium risk</span>
+          <span class="report-value" style="color:var(--medium)">34</span>
+        </div>
+        <div class="report-row">
+          <span class="report-label">Orchestrators</span>
+          <span class="report-value" style="color:var(--critical)">3</span>
+        </div>
+        <div class="report-row">
+          <span class="report-label">Patterns detected</span>
+          <span class="report-value" style="color:var(--medium)">5</span>
+        </div>
+      </div>
+
+      <div class="section-label">Detected Patterns</div>
+      <div class="alert-item">
+        <div class="alert-dot alert-dot--critical"></div>
+        <div class="alert-content">
+          <div class="alert-type">LAUNDERING RING</div>
+          <div class="alert-desc">5-account chain, ₹10L total, 10% decay per hop</div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-dot alert-dot--critical"></div>
+        <div class="alert-content">
+          <div class="alert-type">LAUNDERING RING</div>
+          <div class="alert-desc">5-account chain, ₹7.8L total, within 6-hour window</div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-dot alert-dot--medium"></div>
+        <div class="alert-content">
+          <div class="alert-type">CALL LOOP × 2</div>
+          <div class="alert-desc">Two 4-number closed cycles in separate tower clusters</div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+      <button class="export-btn export-btn--primary">Export as PDF</button>
+      <button class="export-btn export-btn--secondary">Export as CSV</button>
+      <div style="height:64px"></div>
+    </div>
+    <div class="bottom-nav">
+      <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Cases</a>
+      <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="16.5"/></svg>Graph</a>
+      <a class="nav-item nav-item--active" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Reports</a>
+      <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+    </div>
+  `,
+];
+
+// ─── Picker wiring ───
+const container = document.getElementById('phone-container');
+const picker = document.querySelector('.proto-picker');
+const highlight = picker.querySelector('.proto-picker-highlight');
+const items = [...picker.querySelectorAll('.proto-picker-item')];
+let current = 0;
+
+function renderPhone(screenIndex) {
+  container.innerHTML = `
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-status-bar">
+        <span>9:41</span>
+        <span style="display:flex;gap:4px;align-items:center;">
+          <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><rect x="0" y="6" width="2.5" height="4" rx="0.5"/><rect x="3.5" y="4" width="2.5" height="6" rx="0.5"/><rect x="7" y="2" width="2.5" height="8" rx="0.5"/><rect x="10.5" y="0" width="2.5" height="10" rx="0.5"/></svg>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="currentColor"><rect x="0.5" y="0.5" width="13" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1"/><rect x="14" y="3" width="1.5" height="4" rx="0.5"/><rect x="2" y="2" width="9" height="6" rx="1"/></svg>
+        </span>
+      </div>
+      <div class="phone-screen">${SCREENS[screenIndex]()}</div>
+      <div class="phone-home-indicator"></div>
+    </div>
+  `;
+}
+
+function moveHighlight() {
+  const el = items[current];
+  highlight.style.width = el.offsetWidth + 'px';
+  highlight.style.transform = `translateX(${el.offsetLeft}px)`;
+}
+
+function setActive(i) {
+  if (i < 0 || i >= SCREENS.length) return;
+  current = i;
+  items.forEach((el, j) => {
+    el.toggleAttribute('data-active', j === i);
+    if (j === i) el.setAttribute('aria-current', 'true');
+    else el.removeAttribute('aria-current');
+  });
+  moveHighlight();
+  renderPhone(i);
+  const url = new URL(location);
+  url.searchParams.set('v', i + 1);
+  history.replaceState(null, '', url);
+}
+
+items.forEach((el, i) => el.addEventListener('click', () => setActive(i)));
+window.addEventListener('resize', moveHighlight);
+document.addEventListener('keydown', (e) => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const num = parseInt(e.key, 10);
+  if (num >= 1 && num <= SCREENS.length) setActive(num - 1);
+  else if (e.key === 'ArrowRight') setActive((current + 1) % SCREENS.length);
+  else if (e.key === 'ArrowLeft') setActive((current - 1 + SCREENS.length) % SCREENS.length);
+});
+
+setActive((parseInt(new URLSearchParams(location.search).get('v'), 10) || 1) - 1);
+requestAnimationFrame(() => requestAnimationFrame(() => picker.setAttribute('data-ready', '')));
+</script>
+
+</body>
+</html>

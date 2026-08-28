@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toast Variants — Cyber Trace AI</title>
+<style>
+  /* ─── Project tokens (shared across all variants) ─── */
+  :root {
+    --base: #05080d;
+    --panel: #0c131e;
+    --panel-alt: #101a29;
+    --border: #1c2a3d;
+    --text: #dce6f2;
+    --muted: #7d90a8;
+    --accent: #2dd4e0;
+    --accent-dim: #1a8b93;
+    --risk-critical: #ff5673;
+    --risk-medium: #ffb238;
+    --risk-low: #35d399;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--base);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Harness background — realistic dashboard shell ─── */
+  .harness {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .harness-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .harness-header span { color: var(--accent); }
+
+  .harness-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 16px;
+  }
+
+  .harness-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .harness-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .harness-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 150ms ease-out, border-color 150ms ease-out;
+  }
+  .harness-btn:hover { background: var(--panel-alt); border-color: var(--accent-dim); }
+  .harness-btn:active { transform: scale(0.97); }
+
+  .harness-btn--success { border-color: rgba(53,211,153,0.4); color: var(--risk-low); }
+  .harness-btn--success:hover { background: rgba(53,211,153,0.08); }
+  .harness-btn--error { border-color: rgba(255,86,115,0.4); color: var(--risk-critical); }
+  .harness-btn--error:hover { background: rgba(255,86,115,0.08); }
+  .harness-btn--warn { border-color: rgba(255,178,56,0.4); color: var(--risk-medium); }
+  .harness-btn--warn:hover { background: rgba(255,178,56,0.08); }
+
+  /* ─── Stage: each variant renders here ─── */
+  #stage { position: relative; width: 100%; flex: 1; min-height: 0; }
+
+  /* ─── Reduced motion ─── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+
+  /* ═══════════════════════════════════════════════════
+     VARIANT 1: SENTINEL — Right-edge stacking, minimal
+     ═══════════════════════════════════════════════════ */
+
+  .sentinel-container {
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    max-width: 360px;
+    pointer-events: none;
+  }
+
+  .sentinel-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    background: var(--panel);
+    border-left: 3px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text);
+    pointer-events: auto;
+    /* GPU-only entrance: translateX from right + opacity */
+    opacity: 0;
+    transform: translateX(16px);
+    transition: opacity 220ms ease-out, transform 220ms ease-out;
+  }
+
+  .sentinel-toast[data-visible] {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .sentinel-toast[data-exiting] {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+
+  .sentinel-toast--success { border-left-color: var(--risk-low); }
+  .sentinel-toast--error { border-left-color: var(--risk-critical); }
+  .sentinel-toast--warn { border-left-color: var(--risk-medium); }
+
+  .sentinel-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+  }
+
+  .sentinel-toast--success .sentinel-icon { color: var(--risk-low); }
+  .sentinel-toast--error .sentinel-icon { color: var(--risk-critical); }
+  .sentinel-toast--warn .sentinel-icon { color: var(--risk-medium); }
+
+  .sentinel-text { flex: 1; }
+
+  .sentinel-dismiss {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 2px;
+    line-height: 1;
+    transition: color 120ms ease-out;
+  }
+  .sentinel-dismiss:hover { color: var(--text); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sentinel-toast {
+      transition: opacity 220ms ease-out, transform 220ms ease-out;
+    }
+  }
+
+
+  /* ═══════════════════════════════════════════════════
+     VARIANT 2: BRIEFING — Top-center banner strip
+     ═══════════════════════════════════════════════════ */
+
+  .briefing-container {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 100%;
+    max-width: 600px;
+    pointer-events: none;
+  }
+
+  .briefing-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text);
+    pointer-events: auto;
+    /* GPU-only entrance: translateY from top + opacity */
+    opacity: 0;
+    transform: translateY(-100%);
+    transition: opacity 200ms ease-out, transform 200ms ease-out;
+  }
+
+  .briefing-toast[data-visible] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .briefing-toast[data-exiting] {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+
+  .briefing-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .briefing-toast--success .briefing-bar { background: var(--risk-low); }
+  .briefing-toast--error .briefing-bar { background: var(--risk-critical); }
+  .briefing-toast--warn .briefing-bar { background: var(--risk-medium); }
+
+  .briefing-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .briefing-toast--success .briefing-label { color: var(--risk-low); }
+  .briefing-toast--error .briefing-label { color: var(--risk-critical); }
+  .briefing-toast--warn .briefing-label { color: var(--risk-medium); }
+
+  .briefing-text { flex: 1; }
+
+  .briefing-dismiss {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    font-size: 14px;
+    transition: color 120ms ease-out;
+  }
+  .briefing-dismiss:hover { color: var(--text); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .briefing-toast { transition: none; }
+  }
+
+
+  /* ═══════════════════════════════════════════════════
+     VARIANT 3: PULSE — Bottom-right, pop entrance
+     ═══════════════════════════════════════════════════ */
+
+  .pulse-container {
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  .pulse-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text);
+    pointer-events: auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    /* GPU-only entrance: scale + opacity pop */
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .pulse-toast[data-visible] {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .pulse-toast[data-exiting] {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  .pulse-toast--success { border-color: rgba(53,211,153,0.35); }
+  .pulse-toast--error { border-color: rgba(255,86,115,0.35); }
+  .pulse-toast--warn { border-color: rgba(255,178,56,0.35); }
+
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .pulse-toast--success .pulse-dot { background: var(--risk-low); }
+  .pulse-toast--error .pulse-dot { background: var(--risk-critical); }
+  .pulse-toast--warn .pulse-dot { background: var(--risk-medium); }
+
+  .pulse-text { flex: 1; }
+
+  .pulse-dismiss {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 2px;
+    line-height: 1;
+    transition: color 120ms ease-out;
+  }
+  .pulse-dismiss:hover { color: var(--text); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-toast { transition: opacity 120ms ease-out; transform: none; }
+  }
+
+
+  /* ═══════════════════════════════════════════════════
+     PICKER — Verbatim from PICKER.md
+     ═══════════════════════════════════════════════════ */
+
+  .proto-picker {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2147483647;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(10, 10, 10, 0.82);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    backdrop-filter: blur(12px) saturate(1.4);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+      0 8px 24px rgba(0, 0, 0, 0.24),
+      0 2px 6px rgba(0, 0, 0, 0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .proto-picker-highlight {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    will-change: transform;
+  }
+
+  .proto-picker[data-ready] .proto-picker-highlight {
+    transition:
+      transform 250ms cubic-bezier(0.23, 1, 0.32, 1),
+      width 250ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .proto-picker[data-ready] .proto-picker-highlight { transition: none; }
+  }
+
+  .proto-picker-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
+    font: inherit;
+    cursor: pointer;
+    transition: color 150ms ease-out;
+  }
+
+  .proto-picker-item:hover { color: rgba(255, 255, 255, 0.85); }
+  .proto-picker-item:active { transform: scale(0.97); }
+  .proto-picker-item:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.4); outline-offset: 2px; }
+  .proto-picker-item[data-active] { color: #fff; }
+
+  .proto-picker-divider {
+    width: 1px;
+    height: 16px;
+    margin: 0 4px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .proto-picker-replay {
+    padding: 0 10px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="harness">
+  <div class="harness-header">
+    <span>CYBER TRACE AI</span>
+    <span style="color: var(--muted); font-weight: 400; font-family: var(--font-mono); font-size: 11px;">Toast Variant Prototype</span>
+  </div>
+  <div class="harness-body">
+    <div class="harness-label">Trigger a notification</div>
+    <div class="harness-actions">
+      <button class="harness-btn harness-btn--success" onclick="fireToast('success')">Upload successful — 847 CDR records inserted</button>
+      <button class="harness-btn harness-btn--error" onclick="fireToast('error')">Internal Server Error during DB insert</button>
+      <button class="harness-btn harness-btn--warn" onclick="fireToast('warn')">Demo data loaded — switching to sample network</button>
+    </div>
+  </div>
+</div>
+
+<div id="stage"></div>
+
+<!-- Picker (verbatim from PICKER.md) -->
+<nav class="proto-picker" aria-label="Prototype variants">
+  <span class="proto-picker-highlight" aria-hidden="true"></span>
+  <button class="proto-picker-item" data-active aria-current="true">Sentinel</button>
+  <button class="proto-picker-item">Briefing</button>
+  <button class="proto-picker-item">Pulse</button>
+  <span class="proto-picker-divider" aria-hidden="true"></span>
+  <button class="proto-picker-item proto-picker-replay" aria-label="Replay animation (R)">↻</button>
+</nav>
+
+<script>
+// ─── Toast message bank ───
+const MESSAGES = {
+  success: [
+    'Upload successful — 847 CDR records inserted',
+    'Report exported as PDF',
+    'Demo data loaded — 847 CDR + 623 transaction records',
+    'Case created: Operation Blacknet',
+  ],
+  error: [
+    'Internal Server Error during DB insert',
+    'Upload failed — no valid rows found in CSV',
+    'Report generation failed',
+    'Forbidden: Case not found or unowned',
+  ],
+  warn: [
+    'Demo data loaded — switching to sample network',
+    'Time filter applied: 142 nodes in range',
+    'Large dataset detected — streaming parse enabled',
+    'Cold start detected — backend warming up',
+  ],
+};
+
+let toastCounter = 0;
+function fireToast(type) {
+  const msgs = MESSAGES[type];
+  const text = msgs[toastCounter % msgs.length];
+  toastCounter++;
+  renderCurrentVariant(type, text);
+}
+
+// ─── Variant renderers ───
+// Each returns HTML that gets injected into #stage.
+// The stage is split: left half has the trigger buttons context,
+// right half (or overlay) shows the toast.
+
+const variants = [
+  // Variant 1: Sentinel — right-edge stacking
+  function renderSentinel(type, text) {
+    const container = document.getElementById('sentinel-stack');
+    if (!container) return;
+    const id = 'st-' + (++toastCounter);
+    const icon = type === 'success'
+      ? '<svg class="sentinel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>'
+      : type === 'error'
+      ? '<svg class="sentinel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+      : '<svg class="sentinel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+    const el = document.createElement('div');
+    el.className = `sentinel-toast sentinel-toast--${type}`;
+    el.id = id;
+    el.innerHTML = `${icon}<span class="sentinel-text">${text}</span><button class="sentinel-dismiss" aria-label="Dismiss">&times;</button>`;
+    el.querySelector('.sentinel-dismiss').addEventListener('click', () => dismissSentinel(el));
+    container.prepend(el);
+    // Trigger entrance on next frame
+    requestAnimationFrame(() => requestAnimationFrame(() => el.setAttribute('data-visible', '')));
+    // Auto-dismiss after 4s
+    setTimeout(() => dismissSentinel(el), 4000);
+  },
+
+  // Variant 2: Briefing — top-center banner
+  function renderBriefing(type, text) {
+    const container = document.getElementById('briefing-slot');
+    if (!container) return;
+    const labels = { success: 'SUCCESS', error: 'ERROR', warn: 'STATUS' };
+    container.innerHTML = '';
+    const el = document.createElement('div');
+    el.className = `briefing-toast briefing-toast--${type}`;
+    el.innerHTML = `<div class="briefing-bar"></div><span class="briefing-label">${labels[type]}</span><span class="briefing-text">${text}</span><button class="briefing-dismiss" aria-label="Dismiss">&times;</button>`;
+    el.querySelector('.briefing-dismiss').addEventListener('click', () => dismissBriefing(el));
+    container.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.setAttribute('data-visible', '')));
+    setTimeout(() => dismissBriefing(el), 4000);
+  },
+
+  // Variant 3: Pulse — bottom-right, pop entrance
+  function renderPulse(type, text) {
+    const container = document.getElementById('pulse-slot');
+    if (!container) return;
+    container.innerHTML = '';
+    const el = document.createElement('div');
+    el.className = `pulse-toast pulse-toast--${type}`;
+    el.innerHTML = `<span class="pulse-dot"></span><span class="pulse-text">${text}</span><button class="pulse-dismiss" aria-label="Dismiss">&times;</button>`;
+    el.querySelector('.pulse-dismiss').addEventListener('click', () => dismissPulse(el));
+    container.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.setAttribute('data-visible', '')));
+    setTimeout(() => dismissPulse(el), 4000);
+  },
+];
+
+// ─── Dismiss helpers (exit animation, then remove) ───
+function dismissSentinel(el) {
+  if (el.getAttribute('data-exiting')) return;
+  el.setAttribute('data-exiting', '');
+  el.removeAttribute('data-visible');
+  setTimeout(() => el.remove(), 250);
+}
+
+function dismissBriefing(el) {
+  if (el.getAttribute('data-exiting')) return;
+  el.setAttribute('data-exiting', '');
+  el.removeAttribute('data-visible');
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 250);
+}
+
+function dismissPulse(el) {
+  if (el.getAttribute('data-exiting')) return;
+  el.setAttribute('data-exiting', '');
+  el.removeAttribute('data-visible');
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 250);
+}
+
+// ─── Current variant state ───
+let currentVariant = 0;
+let lastFiredType = null;
+let lastFiredText = null;
+
+function renderCurrentVariant(type, text) {
+  lastFiredType = type;
+  lastFiredText = text;
+  variants[currentVariant](type, text);
+}
+
+// ─── Mount the static containers for the current variant ───
+function mountVariant(i) {
+  currentVariant = i;
+  const stage = document.getElementById('stage');
+  // Clear any existing toast containers
+  document.querySelectorAll('.sentinel-container, .briefing-container, .pulse-container').forEach(el => el.remove());
+
+  if (i === 0) {
+    // Sentinel: add stacking container
+    const c = document.createElement('div');
+    c.className = 'sentinel-container';
+    c.id = 'sentinel-stack';
+    document.body.appendChild(c);
+  } else if (i === 1) {
+    // Briefing: add top-center container
+    const c = document.createElement('div');
+    c.className = 'briefing-container';
+    c.id = 'briefing-slot';
+    document.body.appendChild(c);
+  } else if (i === 2) {
+    // Pulse: add bottom-right container
+    const c = document.createElement('div');
+    c.className = 'pulse-container';
+    c.id = 'pulse-slot';
+    document.body.appendChild(c);
+  }
+}
+
+// ─── Picker wiring (from PICKER.md) ───
+const picker = document.querySelector('.proto-picker');
+const highlight = picker.querySelector('.proto-picker-highlight');
+const items = [...picker.querySelectorAll('.proto-picker-item:not(.proto-picker-replay)')];
+const replay = picker.querySelector('.proto-picker-replay');
+
+function moveHighlight() {
+  const el = items[currentVariant];
+  highlight.style.width = el.offsetWidth + 'px';
+  highlight.style.transform = `translateX(${el.offsetLeft}px)`;
+}
+
+function setActive(i) {
+  if (i < 0 || i >= variants.length) return;
+  currentVariant = i;
+  items.forEach((el, j) => {
+    el.toggleAttribute('data-active', j === i);
+    if (j === i) el.setAttribute('aria-current', 'true');
+    else el.removeAttribute('aria-current');
+  });
+  moveHighlight();
+  const url = new URL(location);
+  url.searchParams.set('v', i + 1);
+  history.replaceState(null, '', url);
+  mountVariant(i);
+}
+
+items.forEach((el, i) => el.addEventListener('click', () => setActive(i)));
+replay?.addEventListener('click', () => {
+  if (lastFiredType) renderCurrentVariant(lastFiredType, lastFiredText);
+});
+window.addEventListener('resize', moveHighlight);
+
+document.addEventListener('keydown', (e) => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const num = parseInt(e.key, 10);
+  if (num >= 1 && num <= variants.length) setActive(num - 1);
+  else if (e.key === 'ArrowRight') setActive((currentVariant + 1) % variants.length);
+  else if (e.key === 'ArrowLeft') setActive((currentVariant - 1 + variants.length) % variants.length);
+  else if (e.key === 'r' || e.key === 'R') {
+    if (lastFiredType) renderCurrentVariant(lastFiredType, lastFiredText);
+  }
+});
+
+// Init
+setActive((parseInt(new URLSearchParams(location.search).get('v'), 10) || 1) - 1);
+requestAnimationFrame(() => requestAnimationFrame(() => picker.setAttribute('data-ready', '')));
+</script>
+
+</body>
+</html>

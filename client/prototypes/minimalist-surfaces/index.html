@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber Trace AI — Minimalist Surfaces</title>
+<style>
+  @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=newsreader@400,500;600,700&f[]=jetbrains-mono@400,500&display=swap');
+
+  :root {
+    --bg: #FBFBFA;
+    --surface: #FFFFFF;
+    --border: #EAEAEA;
+    --text: #111111;
+    --muted: #787774;
+    --accent: #111111;
+    --pastel-red: #FDEBEC; --pastel-red-text: #9F2F2D;
+    --pastel-blue: #E1F3FE; --pastel-blue-text: #1F6C9F;
+    --pastel-green: #EDF3EC; --pastel-green-text: #346538;
+    --pastel-yellow: #FBF3DB; --pastel-yellow-text: #956400;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Satoshi', 'SF Pro Display', 'Geist Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif { font-family: 'Newsreader', 'Lyon Text', 'Playfair Display', serif; }
+  .mono { font-family: 'JetBrains Mono', 'SF Mono', 'Geist Mono', monospace; }
+
+  /* ─── Scroll entry animation ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 600ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── Stage ─── */
+  #stage { min-height: 100vh; }
+
+  /* ═══════════════════════════════════════════════════
+     SURFACE 1: DOCUMENTATION
+     ═══════════════════════════════════════════════════ */
+  .docs { max-width: 900px; margin: 0 auto; padding: 80px 24px; }
+
+  .docs-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 64px;
+  }
+  .docs-logo {
+    font-family: 'Satoshi', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .docs-nav-links {
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .docs-nav-links a { color: inherit; text-decoration: none; }
+  .docs-nav-links a:hover { color: var(--text); }
+
+  .docs h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .docs-lead {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 48px;
+  }
+
+  .docs-section { margin-bottom: 56px; }
+  .docs-section h2 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .docs-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    margin-top: 24px;
+  }
+  .docs-section p {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 12px;
+    max-width: 640px;
+  }
+
+  .docs-code {
+    background: #F7F6F3;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+
+  .docs-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-right: 6px;
+  }
+  .docs-tag--blue { background: var(--pastel-blue); color: var(--pastel-blue-text); }
+  .docs-tag--green { background: var(--pastel-green); color: var(--pastel-green-text); }
+  .docs-tag--red { background: var(--pastel-red); color: var(--pastel-red-text); }
+  .docs-tag--yellow { background: var(--pastel-yellow); color: var(--pastel-yellow-text); }
+
+  .docs-bento {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .docs-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+  .docs-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .docs-card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     SURFACE 2: ONBOARDING
+     ═══════════════════════════════════════════════════ */
+  .onboard { max-width: 600px; margin: 0 auto; padding: 80px 24px; text-align: center; }
+
+  .onboard-step {
+    display: none;
+  }
+  .onboard-step.active { display: block; }
+
+  .onboard-progress {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 48px;
+  }
+  .onboard-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 200ms ease-out;
+  }
+  .onboard-dot.active { background: var(--text); }
+
+  .onboard-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+
+  .onboard h1 {
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .onboard p {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 440px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+  }
+
+  .onboard-visual {
+    width: 100%;
+    aspect-ratio: 16/10;
+    background: #F7F6F3;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .onboard-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background: var(--accent);
+    color: #FFFFFF;
+    font-family: 'Satoshi', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 150ms ease-out;
+  }
+  .onboard-btn:active { background: #333333; }
+  .onboard-btn--ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    margin-left: 8px;
+  }
+  .onboard-btn--ghost:hover { color: var(--text); border-color: #ccc; }
+
+  /* ═══════════════════════════════════════════════════
+     SURFACE 3: LANDING PAGE
+     ═══════════════════════════════════════════════════ */
+  .landing { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  .landing-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 80px;
+  }
+  .landing-logo { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .landing-nav-links { display: flex; gap: 28px; font-size: 13px; color: var(--muted); }
+  .landing-nav-links a { color: inherit; text-decoration: none; }
+  .landing-nav-links a:hover { color: var(--text); }
+  .landing-nav-cta {
+    padding: 8px 20px;
+    background: var(--accent);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .landing-hero {
+    text-align: center;
+    padding: 60px 0 80px;
+    position: relative;
+  }
+  .landing-hero::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(253,235,236,0.4) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .landing-hero > * { position: relative; z-index: 1; }
+
+  .landing-hero .serif {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+
+  .landing-hero-sub {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+  }
+
+  .landing-bento {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 0 0 64px;
+  }
+  .landing-bento-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    transition: box-shadow 200ms ease-out;
+  }
+  .landing-bento-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .landing-bento-card.wide { grid-column: span 2; }
+
+  .landing-bento-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+
+  .landing-bento-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .landing-bento-card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .landing-quote {
+    text-align: center;
+    padding: 64px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 64px;
+  }
+  .landing-quote blockquote {
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.4;
+    max-width: 600px;
+    margin: 0 auto 16px;
+  }
+  .landing-quote cite {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: normal;
+  }
+
+  .landing-cta-section {
+    text-align: center;
+    padding: 80px 0;
+  }
+  .landing-cta-section h2 {
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .landing-cta-section p {
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .landing-footer {
+    text-align: center;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     SURFACE 4: DASHBOARD (light adaptation)
+     ═══════════════════════════════════════════════════ */
+  .dash { display: flex; min-height: 100vh; }
+
+  .dash-sidebar {
+    width: 240px;
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .dash-sidebar-logo {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dash-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 150ms ease-out;
+    margin-bottom: 2px;
+  }
+  .dash-nav-item:hover { background: #F7F6F3; }
+  .dash-nav-item.active { background: #F7F6F3; color: var(--text); font-weight: 500; }
+
+  .dash-main { flex: 1; padding: 24px 32px; overflow-y: auto; }
+
+  .dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .dash-header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .dash-header-actions { display: flex; gap: 8px; }
+
+  .dash-btn {
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    transition: background 150ms ease-out;
+  }
+  .dash-btn:hover { background: #F7F6F3; }
+  .dash-btn--primary { background: var(--accent); color: #FFF; border-color: var(--accent); }
+  .dash-btn--primary:hover { background: #333; }
+
+  .dash-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .dash-metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .dash-metric-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .dash-metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .dash-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .dash-table-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .dash-table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    align-items: center;
+  }
+  .dash-table-row:last-child { border-bottom: none; }
+  .dash-table-row:hover { background: #FAFAF9; }
+  .dash-id { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  .dash-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .dash-badge--red { background: var(--pastel-red); color: var(--pastel-red-text); }
+  .dash-badge--yellow { background: var(--pastel-yellow); color: var(--pastel-yellow-text); }
+  .dash-badge--green { background: var(--pastel-green); color: var(--pastel-green-text); }
+
+
+  /* ═══════════════════════════════════════════════════
+     PICKER — Verbatim from PICKER.md
+     ═══════════════════════════════════════════════════ */
+  .proto-picker {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 2147483647; display: flex; align-items: center; gap: 2px; padding: 4px;
+    border-radius: 999px; background: rgba(17,17,17,0.88);
+    backdrop-filter: blur(12px) saturate(1.4);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 8px 24px rgba(0,0,0,0.2);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px; line-height: 1; user-select: none;
+  }
+  .proto-picker-highlight {
+    position: absolute; top: 4px; left: 0; height: 28px;
+    border-radius: 999px; background: rgba(255,255,255,0.12); will-change: transform;
+  }
+  .proto-picker[data-ready] .proto-picker-highlight {
+    transition: transform 250ms cubic-bezier(0.23,1,0.32,1), width 250ms cubic-bezier(0.23,1,0.32,1);
+  }
+  .proto-picker-item {
+    position: relative; display: flex; align-items: center; height: 28px;
+    padding: 0 10px; border: 0; border-radius: 999px; background: transparent;
+    color: rgba(255,255,255,0.5); font: inherit; cursor: pointer;
+    transition: color 150ms ease-out; white-space: nowrap;
+  }
+  .proto-picker-item:hover { color: rgba(255,255,255,0.8); }
+  .proto-picker-item:active { transform: scale(0.97); }
+  .proto-picker-item[data-active] { color: #fff; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+
+<nav class="proto-picker" aria-label="Prototype variants">
+  <span class="proto-picker-highlight" aria-hidden="true"></span>
+  <button class="proto-picker-item" data-active aria-current="true">Docs</button>
+  <button class="proto-picker-item">Onboarding</button>
+  <button class="proto-picker-item">Landing</button>
+  <button class="proto-picker-item">Dashboard</button>
+</nav>
+
+<script>
+const SURFACES = [
+  // ─── Surface 1: Documentation ───
+  () => `
+    <div class="docs">
+      <nav class="docs-nav">
+        <div class="docs-logo">Cyber Trace AI</div>
+        <div class="docs-nav-links">
+          <a href="#">Guide</a>
+          <a href="#">API</a>
+          <a href="#">Schema</a>
+        </div>
+      </nav>
+
+      <h1 class="serif reveal">Getting Started</h1>
+      <p class="docs-lead reveal">Upload a CDR or financial transaction CSV. The system builds an interactive link-graph, scores each node by centrality, and flags suspicious patterns automatically.</p>
+
+      <div class="docs-section reveal">
+        <h2>Quick Start</h2>
+        <p>Connect your Supabase project, configure environment variables, and launch the dev server. The full pipeline — upload to graph — works in under 5 seconds on a 10,000-row dataset.</p>
+
+        <div class="docs-code"><span style="color:#787774"># 1. Install dependencies</span>
+cd client && npm install
+cd server && npm install
+
+<span style="color:#787774"># 2. Configure environment</span>
+cp .env.example .env
+
+<span style="color:#787774"># 3. Start the servers</span>
+cd server && npm run dev
+cd client && npm run dev</div>
+
+        <p>Or click <strong>Pre-load Sample Cyber Network</strong> in the header for an instant demo with no setup required.</p>
+      </div>
+
+      <div class="docs-section reveal">
+        <h2>Architecture</h2>
+        <div class="docs-bento">
+          <div class="docs-card">
+            <h4>Frontend</h4>
+            <p>React (Vite) + Cytoscape.js graph canvas + Tailwind CSS v4 with custom theme tokens.</p>
+          </div>
+          <div class="docs-card">
+            <h4>Backend</h4>
+            <p>Node.js + Express. Streaming CSV parse via multer + csv-parser. No full-buffer loading.</p>
+          </div>
+          <div class="docs-card">
+            <h4>Database</h4>
+            <p>Supabase (PostgreSQL) with Row-Level Security. Every case scoped to its owning investigator.</p>
+          </div>
+          <div class="docs-card">
+            <h4>Analysis</h4>
+            <p>Degree centrality, orchestrator flagging, call loop detection, laundering ring tracing.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="docs-section reveal">
+        <h2>Data Schema</h2>
+        <p>CDR records require six fields. The column auto-detection handles most common export formats from Indian telecom providers.</p>
+
+        <div class="docs-code"><span style="color:#787774">-- CDR Log Schema</span>
+caller_number  TEXT NOT NULL
+receiver_number TEXT NOT NULL
+timestamp      TIMESTAMPTZ NOT NULL
+duration_sec   INTEGER NOT NULL
+tower_id       TEXT
+call_type      TEXT NOT NULL  <span style="color:#787774">-- voice | sms | data</span></div>
+
+        <div style="margin-top: 16px;">
+          <span class="docs-tag docs-tag--blue">CDR</span>
+          <span class="docs-tag docs-tag--green">Financial</span>
+          <span class="docs-tag docs-tag--yellow">Verified</span>
+        </div>
+      </div>
+
+      <div class="docs-section reveal">
+        <h2>Pattern Detection</h2>
+        <h3>Call Loops</h3>
+        <p>Closed cycles of 3–6 numbers calling each other repeatedly. Detected via depth-first search bounded to small cycles.</p>
+        <h3>Laundering Rings</h3>
+        <p>Multi-hop financial transfers with amount decay (10%+ per hop) within a 24-hour window. Chain-following algorithm traces the full path.</p>
+        <h3>Frequency Spikes</h3>
+        <p>Statistical outlier analysis — nodes with abnormally high unique contact count (>2 standard deviations above mean) in a short window.</p>
+      </div>
+    </div>
+  `,
+
+  // ─── Surface 2: Onboarding ───
+  () => `
+    <div class="onboard" id="onboard-root">
+      <div class="onboard-progress">
+        <div class="onboard-dot active" data-step="0"></div>
+        <div class="onboard-dot" data-step="1"></div>
+        <div class="onboard-dot" data-step="2"></div>
+        <div class="onboard-dot" data-step="3"></div>
+      </div>
+
+      <div class="onboard-step active" data-step="0">
+        <div class="onboard-num">STEP 1 OF 4</div>
+        <h1 class="serif">Welcome to<br>Cyber Trace AI</h1>
+        <p>An AI-assisted investigation tool that turns raw call records and bank transaction logs into a traceable criminal network.</p>
+        <div class="onboard-visual" style="background: linear-gradient(135deg, #F7F6F3 0%, #FBFBFA 100%);">
+          <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
+            <circle cx="30" cy="40" r="8" stroke="#111" stroke-width="1.5" fill="none"/>
+            <circle cx="90" cy="25" r="6" stroke="#111" stroke-width="1.5" fill="none"/>
+            <circle cx="90" cy="55" r="6" stroke="#111" stroke-width="1.5" fill="none"/>
+            <circle cx="60" cy="40" r="10" stroke="#9F2F2D" stroke-width="2" fill="#FDEBEC"/>
+            <line x1="38" y1="40" x2="50" y2="40" stroke="#EAEAEA" stroke-width="1.5"/>
+            <line x1="70" y1="40" x2="84" y2="25" stroke="#EAEAEA" stroke-width="1.5"/>
+            <line x1="70" y1="40" x2="84" y2="55" stroke="#EAEAEA" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <button class="onboard-btn" onclick="nextStep()">Get started</button>
+      </div>
+
+      <div class="onboard-step" data-step="1">
+        <div class="onboard-num">STEP 2 OF 4</div>
+        <h1 class="serif">Upload your data</h1>
+        <p>Drop a CDR or financial transaction CSV. The system auto-detects columns and maps them to the analysis schema — no pre-formatting needed.</p>
+        <div class="onboard-visual">
+          <div style="border: 2px dashed #EAEAEA; border-radius: 8px; padding: 24px 40px; text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 8px; color: var(--muted);">+</div>
+            <div style="font-size: 13px; color: var(--muted);">Drop CSV here or click to browse</div>
+          </div>
+        </div>
+        <button class="onboard-btn" onclick="nextStep()">Continue</button>
+        <button class="onboard-btn onboard-btn--ghost" onclick="prevStep()">Back</button>
+      </div>
+
+      <div class="onboard-step" data-step="2">
+        <div class="onboard-num">STEP 3 OF 4</div>
+        <h1 class="serif">Explore the network</h1>
+        <p>Every phone number and account becomes a node. Every call and transfer becomes an edge. The system scores centrality and flags orchestrators automatically.</p>
+        <div class="onboard-visual" style="background: #F7F6F3;">
+          <svg width="200" height="120" viewBox="0 0 200 120" fill="none">
+            <line x1="40" y1="30" x2="100" y2="60" stroke="#EAEAEA" stroke-width="1.5"/>
+            <line x1="100" y1="60" x2="160" y2="35" stroke="#EAEAEA" stroke-width="1.5"/>
+            <line x1="100" y1="60" x2="80" y2="100" stroke="#EAEAEA" stroke-width="1.5"/>
+            <line x1="80" y1="100" x2="150" y2="90" stroke="#9F2F2D" stroke-width="1" stroke-dasharray="4,3"/>
+            <circle cx="40" cy="30" r="7" fill="#FFF" stroke="#346538" stroke-width="1.5"/>
+            <circle cx="100" cy="60" r="10" fill="#FDEBEC" stroke="#9F2F2D" stroke-width="2"/>
+            <circle cx="160" cy="35" r="6" fill="#FFF" stroke="#EAEAEA" stroke-width="1.5"/>
+            <circle cx="80" cy="100" r="8" fill="#FFF" stroke="#956400" stroke-width="1.5"/>
+            <circle cx="150" cy="90" r="5" fill="#FFF" stroke="#EAEAEA" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <button class="onboard-btn" onclick="nextStep()">Continue</button>
+        <button class="onboard-btn onboard-btn--ghost" onclick="prevStep()">Back</button>
+      </div>
+
+      <div class="onboard-step" data-step="3">
+        <div class="onboard-num">STEP 4 OF 4</div>
+        <h1 class="serif">Export your report</h1>
+        <p>One click produces a court-ready PDF or CSV documenting the flagged network, detected patterns, and evidence trail — reproducible every time.</p>
+        <div class="onboard-visual">
+          <div style="background: #FFF; border: 1px solid #EAEAEA; border-radius: 8px; padding: 16px 20px; width: 80%; text-align: left;">
+            <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Operation Blacknet — Audit Report</div>
+            <div style="display: flex; gap: 16px; font-size: 11px; color: var(--muted);">
+              <span>Nodes: <strong style="color: var(--text)">247</strong></span>
+              <span>Critical: <strong style="color: var(--pastel-red-text)">12</strong></span>
+              <span>Patterns: <strong style="color: var(--pastel-yellow-text)">5</strong></span>
+            </div>
+          </div>
+        </div>
+        <button class="onboard-btn" onclick="alert('Onboarding complete!')">Start investigating</button>
+        <button class="onboard-btn onboard-btn--ghost" onclick="prevStep()">Back</button>
+      </div>
+    </div>
+  `,
+
+  // ─── Surface 3: Landing Page ───
+  () => `
+    <div class="landing">
+      <nav class="landing-nav">
+        <div class="landing-logo">Cyber Trace AI</div>
+        <div class="landing-nav-links">
+          <a href="#">Product</a>
+          <a href="#">Docs</a>
+          <a href="#">Architecture</a>
+        </div>
+        <button class="landing-nav-cta">Launch demo</button>
+      </nav>
+
+      <section class="landing-hero reveal">
+        <p style="font-size:12px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:16px; font-family:'JetBrains Mono',monospace;">SIH 26189 · Ministry of Home Affairs</p>
+        <h1 class="serif">Turn raw call records<br>into traceable networks</h1>
+        <p class="landing-hero-sub">Upload CDR and bank transaction CSVs. The system builds an interactive link-graph, flags orchestrators, and detects laundering rings — in seconds.</p>
+        <button class="onboard-btn" style="margin-right:8px;">Pre-load Sample Network</button>
+        <button class="onboard-btn onboard-btn--ghost">Read the docs</button>
+      </section>
+
+      <section class="landing-bento reveal">
+        <div class="landing-bento-card wide">
+          <div class="landing-bento-icon" style="background: var(--pastel-blue);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F6C9F" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="16.5"/></svg>
+          </div>
+          <h3>Interactive Link Graph</h3>
+          <p>Every phone number and account becomes a node. Every call and transfer becomes an edge. Risk-colored borders make severity instantly readable across the entire network.</p>
+        </div>
+        <div class="landing-bento-card">
+          <div class="landing-bento-icon" style="background: var(--pastel-red);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9F2F2D" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <h3>Orchestrator Detection</h3>
+          <p>Degree centrality scoring surfaces the most influential nodes — those bridging multiple otherwise-disconnected clusters.</p>
+        </div>
+        <div class="landing-bento-card">
+          <div class="landing-bento-icon" style="background: var(--pastel-green);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#346538" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+          </div>
+          <h3>Pattern Detection</h3>
+          <p>Call loops, laundering rings, and frequency spikes are flagged automatically — no manual cross-referencing needed.</p>
+        </div>
+        <div class="landing-bento-card">
+          <div class="landing-bento-icon" style="background: var(--pastel-yellow);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#956400" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          </div>
+          <h3>Court-Ready Reports</h3>
+          <p>One-click PDF and CSV export. Deterministic output — same data always produces the same report.</p>
+        </div>
+        <div class="landing-bento-card">
+          <div class="landing-bento-icon" style="background: var(--pastel-blue);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F6C9F" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <h3>Row-Level Security</h3>
+          <p>Every investigation is cryptographically scoped to its owning investigator. No cross-case data leakage — ever.</p>
+        </div>
+      </section>
+
+      <section class="landing-quote reveal">
+        <blockquote class="serif">"The centrality scoring found the orchestrator in under 3 seconds. Manual cross-referencing would have taken hours."</blockquote>
+        <cite>Rajesh Kumar · Cyber Cell Inspector, Maharashtra</cite>
+      </section>
+
+      <section class="landing-cta-section reveal">
+        <h2 class="serif">Start investigating</h2>
+        <p>Upload your first CSV. The system handles the rest.</p>
+        <button class="onboard-btn">Pre-load Sample Network</button>
+      </section>
+
+      <footer class="landing-footer">
+        SIH 26189 · Ministry of Home Affairs · NCRB · Women Safety Division
+      </footer>
+    </div>
+  `,
+
+  // ─── Surface 4: Dashboard (light adaptation) ───
+  () => `
+    <div class="dash">
+      <aside class="dash-sidebar">
+        <div class="dash-sidebar-logo">Cyber Trace AI</div>
+        <div class="dash-nav-item active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="16.5"/></svg>
+          Network
+        </div>
+        <div class="dash-nav-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          Cases
+        </div>
+        <div class="dash-nav-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          Reports
+        </div>
+        <div class="dash-nav-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Settings
+        </div>
+      </aside>
+
+      <main class="dash-main">
+        <div class="dash-header">
+          <h1>Operation Blacknet</h1>
+          <div class="dash-header-actions">
+            <button class="dash-btn">Export PDF</button>
+            <button class="dash-btn dash-btn--primary">Upload CSV</button>
+          </div>
+        </div>
+
+        <div class="dash-metrics reveal">
+          <div class="dash-metric">
+            <div class="dash-metric-label">Nodes</div>
+            <div class="dash-metric-value">247</div>
+          </div>
+          <div class="dash-metric">
+            <div class="dash-metric-label">Connections</div>
+            <div class="dash-metric-value">1,432</div>
+          </div>
+          <div class="dash-metric">
+            <div class="dash-metric-label">Critical</div>
+            <div class="dash-metric-value" style="color: var(--pastel-red-text);">12</div>
+          </div>
+          <div class="dash-metric">
+            <div class="dash-metric-label">Patterns</div>
+            <div class="dash-metric-value" style="color: var(--pastel-yellow-text);">5</div>
+          </div>
+        </div>
+
+        <div class="dash-table reveal">
+          <div class="dash-table-header">
+            <div>Suspect</div>
+            <div>Centrality</div>
+            <div>Risk</div>
+            <div>Connections</div>
+          </div>
+          <div class="dash-table-row">
+            <div><span class="dash-id">+91 6595 376 178</span></div>
+            <div><span class="mono" style="font-size:12px;">0.342</span></div>
+            <div><span class="dash-badge dash-badge--red">Critical</span></div>
+            <div style="font-size:12px;">47 links · Bridges 4 clusters</div>
+          </div>
+          <div class="dash-table-row">
+            <div><span class="dash-id">+91 7906 113 910</span></div>
+            <div><span class="mono" style="font-size:12px;">0.221</span></div>
+            <div><span class="dash-badge dash-badge--red">Critical</span></div>
+            <div style="font-size:12px;">15 contacts in 12 minutes</div>
+          </div>
+          <div class="dash-table-row">
+            <div><span class="dash-id">1031 180 242</span></div>
+            <div><span class="mono" style="font-size:12px;">0.183</span></div>
+            <div><span class="dash-badge dash-badge--yellow">Medium</span></div>
+            <div style="font-size:12px;">Financial hub · ₹4.2L transfers</div>
+          </div>
+          <div class="dash-table-row">
+            <div><span class="dash-id">+91 9335 856 413</span></div>
+            <div><span class="mono" style="font-size:12px;">0.094</span></div>
+            <div><span class="dash-badge dash-badge--green">Low</span></div>
+            <div style="font-size:12px;">23 calls to orchestrator</div>
+          </div>
+          <div class="dash-table-row">
+            <div><span class="dash-id">9107 751 097</span></div>
+            <div><span class="mono" style="font-size:12px;">0.067</span></div>
+            <div><span class="dash-badge dash-badge--yellow">Medium</span></div>
+            <div style="font-size:12px;">Laundering ring node · Hop 1 of 5</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  `,
+];
+
+// ─── Onboarding state ───
+let onboardStep = 0;
+function updateOnboard() {
+  document.querySelectorAll('.onboard-step').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.step) === onboardStep);
+  });
+  document.querySelectorAll('.onboard-dot').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.step) <= onboardStep);
+  });
+}
+function nextStep() { if (onboardStep < 3) { onboardStep++; updateOnboard(); } }
+function prevStep() { if (onboardStep > 0) { onboardStep--; updateOnboard(); } }
+
+// ─── Picker wiring ───
+const stage = document.getElementById('stage');
+const picker = document.querySelector('.proto-picker');
+const highlight = picker.querySelector('.proto-picker-highlight');
+const items = [...picker.querySelectorAll('.proto-picker-item')];
+let current = 0;
+
+function mount(i) {
+  stage.innerHTML = SURFACES[i]();
+  // Init scroll reveal
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  });
+}
+
+function moveHighlight() {
+  const el = items[current];
+  highlight.style.width = el.offsetWidth + 'px';
+  highlight.style.transform = `translateX(${el.offsetLeft}px)`;
+}
+
+function setActive(i) {
+  if (i < 0 || i >= SURFACES.length) return;
+  current = i;
+  onboardStep = 0;
+  items.forEach((el, j) => {
+    el.toggleAttribute('data-active', j === i);
+    if (j === i) el.setAttribute('aria-current', 'true');
+    else el.removeAttribute('aria-current');
+  });
+  moveHighlight();
+  const url = new URL(location);
+  url.searchParams.set('v', i + 1);
+  history.replaceState(null, '', url);
+  mount(i);
+}
+
+items.forEach((el, i) => el.addEventListener('click', () => setActive(i)));
+window.addEventListener('resize', moveHighlight);
+document.addEventListener('keydown', (e) => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const num = parseInt(e.key, 10);
+  if (num >= 1 && num <= SURFACES.length) setActive(num - 1);
+  else if (e.key === 'ArrowRight') setActive((current + 1) % SURFACES.length);
+  else if (e.key === 'ArrowLeft') setActive((current - 1 + SURFACES.length) % SURFACES.length);
+});
+
+// Scroll reveal observer
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+setActive((parseInt(new URLSearchParams(location.search).get('v'), 10) || 1) - 1);
+requestAnimationFrame(() => requestAnimationFrame(() => picker.setAttribute('data-ready', '')));
+</script>
+
+</body>
+</html>

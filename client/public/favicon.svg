@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="shieldStroke" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2dd4e0"/>
+      <stop offset="100%" stop-color="#1a8b93"/>
+    </linearGradient>
+    <linearGradient id="shieldFill" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#101b2b"/>
+      <stop offset="100%" stop-color="#0c131e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shield body -->
+  <path
+    d="M16 1.5L3.5 7.5v7.5c0 7.8 5.3 15.1 12.5 16.8C23.2 29.1 28.5 22.8 28.5 15V7.5L16 1.5z"
+    fill="url(#shieldFill)"
+    stroke="url(#shieldStroke)"
+    stroke-width="1.8"
+    stroke-linejoin="round"
+  />
+
+  <!-- Network edges — heavier weight for small-size legibility -->
+  <line x1="10.5" y1="12" x2="21" y2="10.5" stroke="#2dd4e0" stroke-width="1.6" opacity="0.7" stroke-linecap="round"/>
+  <line x1="10.5" y1="12" x2="16" y2="20" stroke="#2dd4e0" stroke-width="1.6" opacity="0.7" stroke-linecap="round"/>
+  <line x1="21" y1="10.5" x2="22" y2="18.5" stroke="#2dd4e0" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>
+  <line x1="16" y1="20" x2="22" y2="18.5" stroke="#2dd4e0" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>
+  <line x1="10.5" y1="12" x2="22" y2="18.5" stroke="#2dd4e0" stroke-width="0.8" opacity="0.3" stroke-linecap="round" stroke-dasharray="2 1.5"/>
+
+  <!-- Nodes — larger radii, risk-color-coded -->
+  <!-- Primary cyan node (center-left) -->
+  <circle cx="10.5" cy="12" r="2.8" fill="#2dd4e0"/>
+  <circle cx="10.5" cy="12" r="1.2" fill="#0c131e"/>
+  <!-- Alarm red node (top-right) -->
+  <circle cx="21" cy="10.5" r="2.2" fill="#ff5673"/>
+  <circle cx="21" cy="10.5" r="0.9" fill="#0c131e"/>
+  <!-- Clear green node (bottom-center) -->
+  <circle cx="16" cy="20" r="2.5" fill="#35d399"/>
+  <circle cx="16" cy="20" r="1" fill="#0c131e"/>
+  <!-- Amber warning node (bottom-right) -->
+  <circle cx="22" cy="18.5" r="1.8" fill="#ffb238"/>
+  <circle cx="22" cy="18.5" r="0.7" fill="#0c131e"/>
+</svg>

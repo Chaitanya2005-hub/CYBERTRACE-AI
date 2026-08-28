@@ -1,67 +1,112 @@
 # Deployment Guide - Cyber Trace AI
 
-## Deploy to Render
+## Quick Deploy to Vercel (Frontend) + Railway (Backend)
+
+This is the fastest deployment option with minimal configuration.
+
+### Option 1: Vercel Frontend + Railway Backend (Recommended)
+
+#### Deploy Frontend to Vercel
+
+1. **Install Vercel CLI** (if not already installed):
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Deploy from project root**:
+   ```bash
+   vercel
+   ```
+
+3. **Follow the prompts**:
+   - Set up and deploy: `Y`
+   - Scope: Your username
+   - Link to existing project: `N`
+   - Project name: `cybertrace-ai` (or your choice)
+   - Directory: `./`
+   - Override settings: `N`
+
+4. **Set environment variables in Vercel dashboard**:
+   - Go to your project on Vercel
+   - Settings → Environment Variables
+   - Add:
+     - `VITE_API_BASE_URL`: Your backend URL (after backend deployment)
+     - `VITE_SUPABASE_URL`: Your Supabase URL
+     - `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key
+
+#### Deploy Backend to Railway
+
+1. **Install Railway CLI**:
+   ```bash
+   npm i -g @railway/cli
+   ```
+
+2. **Login to Railway**:
+   ```bash
+   railway login
+   ```
+
+3. **Deploy backend**:
+   ```bash
+   cd server
+   railway init
+   railway up
+   ```
+
+4. **Set environment variables in Railway dashboard**:
+   - Go to your Railway project
+   - Variables tab
+   - Add:
+     - `PORT`: `5000`
+     - `SUPABASE_URL`: Your Supabase URL
+     - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
+     - `CORS_ALLOWED_ORIGIN`: Your Vercel frontend URL
+
+#### Update CORS Configuration
+
+1. Get your Vercel frontend URL
+2. Update `CORS_ALLOWED_ORIGIN` in Railway with that URL
+3. Railway will automatically redeploy
+
+### Option 2: Render (Both Services)
 
 This application is configured for deployment on Render using the provided `render.yaml` file.
 
-### Prerequisites
+#### Prerequisites
 
 1. **Render Account**: Create an account at [render.com](https://render.com)
 2. **GitHub Repository**: Push your code to a GitHub repository
 3. **Supabase Project**: Have your Supabase project URL and keys ready
 
-### Step-by-Step Deployment
+#### Step-by-Step Deployment
 
-#### 1. Prepare Your Repository
+1. **Prepare Your Repository** (already done)
+   ```bash
+   git add .
+   git commit -m "Configure for Render deployment"
+   git push origin main
+   ```
 
-```bash
-# Commit all changes
-git add .
-git commit -m "Configure for Render deployment"
-git push origin main
-```
+2. **Create Render Services**:
+   - Go to [render.com](https://render.com) and log in
+   - Click **"New +"** → **"Web Service"**
+   - Connect your GitHub repository
+   - Render will automatically detect the `render.yaml` file
+   - Review the configuration and click **"Apply"**
 
-#### 2. Create Render Services
+3. **Configure Environment Variables**:
+   - Backend: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CORS_ALLOWED_ORIGIN`
+   - Frontend: `VITE_API_BASE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
-1. Go to [render.com](https://render.com) and log in
-2. Click **"New +"** → **"Web Service"**
-3. Connect your GitHub repository
-4. Render will automatically detect the `render.yaml` file
-5. Review the configuration and click **"Apply"**
-
-#### 3. Configure Environment Variables
-
-After creating the services, you need to set environment variables:
-
-**For Backend Service (`cybertrace-ai-backend`):**
-- `SUPABASE_URL`: Your Supabase project URL
-- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
-- `CORS_ALLOWED_ORIGIN`: Your frontend URL (e.g., `https://cybertrace-ai-frontend.onrender.com`)
-
-**For Frontend Service (`cybertrace-ai-frontend`):**
-- `VITE_API_BASE_URL`: Your backend URL (e.g., `https://cybertrace-ai-backend.onrender.com`)
-- `VITE_SUPABASE_URL`: Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key
-
-#### 4. Update CORS Configuration
-
-After deployment, update the backend's CORS_ALLOWED_ORIGIN to match your frontend URL:
-1. Go to your backend service on Render
-2. Navigate to **Environment**
-3. Update `CORS_ALLOWED_ORIGIN` to your frontend URL
-4. Click **"Save Changes"** to trigger a redeploy
-
-#### 5. Access Your Application
-
-- **Frontend**: `https://cybertrace-ai-frontend.onrender.com`
-- **Backend API**: `https://cybertrace-ai-backend.onrender.com`
-- **Health Check**: `https://cybertrace-ai-backend.onrender.com/api/health`
+4. **Access Your Application**:
+   - Frontend: `https://cybertrace-ai-frontend.onrender.com`
+   - Backend: `https://cybertrace-ai-backend.onrender.com`
 
 ### Verification Steps
 
 1. **Check Backend Health**:
    ```bash
-   curl https://cybertrace-ai-backend.onrender.com/api/health
+   curl https://your-backend-url.onrender.com/api/health
    ```
    Should return: `{"status":"ok","message":"Backend is running and reaches Supabase."}`
 

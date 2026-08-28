@@ -240,14 +240,6 @@ app.get('/api/report/:caseId', (req, res) => {
   res.send(reportContent);
 });
 
-// SPA fallback for frontend routing
-if (fs.existsSync(clientDistPath)) {
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api/')) return next();
-    res.sendFile(path.join(clientDistPath, 'index.html'));
-  });
-}
-
 // ─── Start ───
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

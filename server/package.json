@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch index.ts",
     "start": "tsx index.ts",
+    "demo": "tsx demo-server.ts",
     "generate-data": "tsx scripts/generate_mock_data.ts",
     "seed": "tsx scripts/seed_test_user.ts",
     "load-cdr": "tsx scripts/load_cdr_to_supabase.ts",

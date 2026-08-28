@@ -8,5 +8,8 @@
     "start": "npm --prefix server start",
     "dev:client": "npm --prefix client run dev",
     "dev:server": "npm --prefix server run dev"
+  },
+  "dependencies": {
+    "@vercel/node": "^9.0.1"
   }
 }

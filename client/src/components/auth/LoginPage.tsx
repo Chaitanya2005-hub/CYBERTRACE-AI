@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, UserPlus, Lock, Envelope, ArrowRight, Lightning } from '@phosphor-icons/react';
+import { Shield, UserPlus, Lock, Envelope, ArrowRight } from '@phosphor-icons/react';
 import { signIn, signUp } from '../../services/auth';
 import type { ToastMessage } from '../ui/Toast';
 
@@ -36,11 +36,22 @@ export function LoginPage({ onLoginSuccess, showToast }: LoginPageProps) {
         });
       }
     } catch (error: any) {
-      showToast({
-        id: Date.now().toString(),
-        type: 'error',
-        text: error.message || 'Authentication failed',
-      });
+      // If sign-in fails due to invalid credentials or user not found, switch to signup
+      const errorMessage = error.message || 'Authentication failed';
+      if (errorMessage.includes('Invalid credentials') || errorMessage.includes('not found') || errorMessage.includes('Invalid login')) {
+        showToast({
+          id: Date.now().toString(),
+          type: 'info',
+          text: 'Account not found. Please create an account first.',
+        });
+        setIsSignUp(true);
+      } else {
+        showToast({
+          id: Date.now().toString(),
+          type: 'error',
+          text: errorMessage,
+        });
+      }
     } finally {
       setIsLoading(false);
     }

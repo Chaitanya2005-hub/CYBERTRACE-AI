@@ -1,8 +1,8 @@
-import { CheckCircle, Warning, X } from '@phosphor-icons/react';
+import { CheckCircle, Warning, Info, X } from '@phosphor-icons/react';
 
 export interface ToastMessage {
   id: string;
-  type: 'success' | 'error';
+  type: 'success' | 'error' | 'info';
   text: string;
 }
 
@@ -14,15 +14,19 @@ export function Toast({
   onDismiss: (id: string) => void;
 }) {
   const isSuccess = toast.type === 'success';
+  const isInfo = toast.type === 'info';
+  
   return (
     <div
       className={`flex items-center gap-2 px-3 py-2 rounded border text-sm font-mono shadow-lg animate-slide-in ${
         isSuccess
           ? 'bg-risk-low/10 border-risk-low/30 text-risk-low'
+          : isInfo
+          ? 'bg-accent/10 border-accent/30 text-accent'
           : 'bg-risk-critical/10 border-risk-critical/30 text-risk-critical'
       }`}
     >
-      {isSuccess ? <CheckCircle className="w-4 h-4 shrink-0" weight="fill" /> : <Warning className="w-4 h-4 shrink-0" weight="fill" />}
+      {isSuccess ? <CheckCircle className="w-4 h-4 shrink-0" weight="fill" /> : isInfo ? <Info className="w-4 h-4 shrink-0" weight="fill" /> : <Warning className="w-4 h-4 shrink-0" weight="fill" />}
       <span className="flex-1">{toast.text}</span>
       <button onClick={() => onDismiss(toast.id)} className="opacity-60 hover:opacity-100">
         <X className="w-3.5 h-3.5" />

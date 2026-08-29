@@ -10,7 +10,9 @@ interface LeftSidebarProps {
   timeEnd: string;
   onTimeChange: (start: string, end: string) => void;
   onUpload: (file: File, type: 'cdr' | 'transactions') => Promise<void>;
+  onCreateCase: () => Promise<void>;
   isUploading: boolean;
+  isCreatingCase: boolean;
   meta: {
     cdrCount: number;
     finCount: number;
@@ -29,7 +31,9 @@ export function LeftSidebar({
   timeEnd,
   onTimeChange,
   onUpload,
+  onCreateCase,
   isUploading,
+  isCreatingCase,
   meta,
   isOpen = false,
   onClose,
@@ -86,6 +90,26 @@ export function LeftSidebar({
           <h3 className="text-[11px] font-display font-semibold text-text-muted uppercase tracking-wider mb-2">
           Data Upload
         </h3>
+
+        {!caseId && (
+          <button
+            onClick={onCreateCase}
+            disabled={isCreatingCase}
+            className="w-full flex items-center justify-center gap-1.5 py-2 rounded bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed mb-2"
+          >
+            {isCreatingCase ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Creating Case…
+              </>
+            ) : (
+              <>
+                <UploadSimple className="w-3.5 h-3.5" />
+                Create New Case
+              </>
+            )}
+          </button>
+        )}
 
         <div className="flex gap-1 mb-2">
           <button

@@ -11,6 +11,7 @@ import {
   uploadCSV,
   preloadDemo,
   downloadReport,
+  createCase,
   type GraphData,
   isBypassModeEnabled,
 } from './services/api';
@@ -172,6 +173,32 @@ function App() {
     },
     [caseId, loadGraph, addToast]
   );
+
+  // Handle case creation
+  const [isCreatingCase, setIsCreatingCase] = useState(false);
+  const handleCreateCase = useCallback(async () => {
+    setIsCreatingCase(true);
+    try {
+      const caseName = `Investigation ${new Date().toLocaleDateString()}`;
+      const newCase = await createCase(caseName);
+      setCaseId(newCase.id);
+      setCaseName(newCase.case_name);
+      setIsDemoMode(false);
+      addToast({
+        id: Date.now().toString(),
+        type: 'success',
+        text: `Created new case: ${newCase.case_name}`
+      });
+    } catch (err: any) {
+      addToast({
+        id: Date.now().toString(),
+        type: 'error',
+        text: err.message || 'Failed to create case'
+      });
+    } finally {
+      setIsCreatingCase(false);
+    }
+  }, [addToast]);
 
   // Handle demo preload
   const handlePreloadDemo = useCallback(async () => {
@@ -382,7 +409,9 @@ function App() {
           timeEnd={timeEnd}
           onTimeChange={handleTimeChange}
           onUpload={handleUpload}
+          onCreateCase={handleCreateCase}
           isUploading={isUploading}
+          isCreatingCase={isCreatingCase}
           meta={graphData?.meta ?? null}
           isOpen={leftSidebarOpen}
           onClose={() => setLeftSidebarOpen(false)}

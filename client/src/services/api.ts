@@ -120,3 +120,21 @@ export async function downloadReport(
 export async function checkHealth(): Promise<{ status: string; message: string }> {
   return apiFetch<{ status: string; message: string }>('/api/health');
 }
+
+export interface Case {
+  id: string;
+  case_name: string;
+  created_at: string;
+}
+
+export async function createCase(caseName: string): Promise<Case> {
+  return apiFetch<Case>('/api/cases', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ caseName })
+  });
+}
+
+export async function listCases(): Promise<Case[]> {
+  return apiFetch<Case[]>('/api/cases');
+}

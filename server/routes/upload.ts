@@ -16,7 +16,11 @@ uploadRouter.post('/cdr', upload.single('file'), async (req: Request, res: Respo
     res.status(400).json({ error: 'No file uploaded' });
     return;
   }
-  const caseId = req.body.caseId || 'e020d299-0ed7-4ea1-88b0-2f40ad7985db'; // Default to seeded case
+  const caseId = req.body.caseId;
+  if (!caseId) {
+    res.status(400).json({ error: 'Case ID is required. Please create a case first.' });
+    return;
+  }
   const userId = (req as any).user.id;
 
   // Anti-IDOR: Check if user owns the case
@@ -84,7 +88,11 @@ uploadRouter.post('/transactions', upload.single('file'), async (req: Request, r
     res.status(400).json({ error: 'No file uploaded' });
     return;
   }
-  const caseId = req.body.caseId || 'e020d299-0ed7-4ea1-88b0-2f40ad7985db';
+  const caseId = req.body.caseId;
+  if (!caseId) {
+    res.status(400).json({ error: 'Case ID is required. Please create a case first.' });
+    return;
+  }
   const userId = (req as any).user.id;
 
   // Anti-IDOR

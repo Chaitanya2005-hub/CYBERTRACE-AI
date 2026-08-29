@@ -4,6 +4,7 @@ import { mockAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { buildGraph, detectPatterns } from '../utils/graphAnalysis.js';
 import { generateReport, getReportMimeType, getReportExtension } from '../utils/reportGenerator.js';
+import { isDemoCase, getDemoReport } from '../utils/demoStore.js';
 import type { DetectedPattern, FinancialTransaction } from '../../shared/types.js';
 
 export const reportRouter = Router();
@@ -16,6 +17,14 @@ reportRouter.get(
     const userId = (req as any).user.id;
     const fmtParam = typeof req.query.format === 'string' ? req.query.format : '';
     const format = fmtParam === 'csv' ? 'csv' : 'pdf';
+
+    if (isDemoCase(caseId)) {
+      const demoRep = getDemoReport(format);
+      res.setHeader('Content-Type', demoRep.mimeType);
+      res.setHeader('Content-Disposition', `attachment; filename="cyber-trace-report-demo.${demoRep.extension}"`);
+      res.send(demoRep.content);
+      return;
+    }
 
     // Anti-IDOR: verify case ownership
     const { data: caseData, error: caseError } = await supabaseAdmin

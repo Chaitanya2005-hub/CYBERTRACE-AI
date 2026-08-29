@@ -2,10 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 // Check if we're in bypass mode (demo server)
-// Only use bypass mode if Supabase credentials are missing
-const isBypassMode = !supabaseUrl || !supabaseAnonKey;
+// Force bypass mode if using demo server (port 3001) or if Supabase credentials are missing
+const isBypassMode = !supabaseUrl || !supabaseAnonKey || apiBaseUrl.includes('3001');
 
 let supabase: any = null;
 
@@ -86,13 +87,19 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     return null;
   }
 
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) throw error;
-  return user ? {
-    id: user.id,
-    email: user.email!,
-    emailConfirmed: user.email_confirmed ?? false,
-  } : null;
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return user ? {
+      id: user.id,
+      email: user.email!,
+      emailConfirmed: user.email_confirmed ?? false,
+    } : null;
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    // Return null instead of throwing to allow bypass mode fallback
+    return null;
+  }
 }
 
 export async function onAuthStateChange(callback: (user: AuthUser | null) => void): Promise<() => void> {
@@ -101,16 +108,22 @@ export async function onAuthStateChange(callback: (user: AuthUser | null) => voi
     return Promise.resolve(() => {});
   }
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-    const user = session?.user ? {
-      id: session.user.id,
-      email: session.user.email!,
-      emailConfirmed: session.user.email_confirmed ?? false,
-    } : null;
-    callback(user);
-  });
+  try {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      const user = session?.user ? {
+        id: session.user.id,
+        email: session.user.email!,
+        emailConfirmed: session.user.email_confirmed ?? false,
+      } : null;
+      callback(user);
+    });
 
-  return Promise.resolve(() => {
-    if (subscription) subscription.unsubscribe();
-  });
+    return Promise.resolve(() => {
+      if (subscription) subscription.unsubscribe();
+    });
+  } catch (error) {
+    console.error('Auth state change listener failed:', error);
+    // Return empty cleanup function
+    return Promise.resolve(() => {});
+  }
 }

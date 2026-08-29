@@ -8,6 +8,7 @@ import { uploadRouter } from './routes/upload.js';
 import { graphRouter } from './routes/graph.js';
 import { reportRouter } from './routes/report.js';
 import { demoRouter } from './routes/demo.js';
+import { casesRouter } from './routes/cases.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/upload', uploadRouter);
 app.use('/api/graph', graphRouter);
 app.use('/api/report', reportRouter);
 app.use('/api/demo', demoRouter);
+app.use('/api/cases', casesRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {

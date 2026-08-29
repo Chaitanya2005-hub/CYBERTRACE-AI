@@ -3,6 +3,7 @@ import { supabaseAdmin } from '../utils/supabaseAdmin.js';
 import { mockAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { buildGraph, detectPatterns } from '../utils/graphAnalysis.js';
+import { isDemoCase, getDemoGraphData } from '../utils/demoStore.js';
 import type { DetectedPattern, FinancialTransaction } from '../../shared/types.js';
 
 export const graphRouter = Router();
@@ -14,6 +15,11 @@ graphRouter.get(
     const { caseId } = req.params;
     const userId = (req as any).user.id;
     const { start, end, selectedNode } = req.query as { start?: string; end?: string; selectedNode?: string };
+
+    if (isDemoCase(caseId)) {
+      res.json(getDemoGraphData(start, end, selectedNode));
+      return;
+    }
 
     // Anti-IDOR: verify case ownership
     const { data: caseData, error: caseError } = await supabaseAdmin

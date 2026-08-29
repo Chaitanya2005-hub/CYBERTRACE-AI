@@ -7,6 +7,7 @@ dotenv.config();
 import { uploadRouter } from './routes/upload.js';
 import { graphRouter } from './routes/graph.js';
 import { reportRouter } from './routes/report.js';
+import { demoRouter } from './routes/demo.js';
 
 const app = express();
 
@@ -19,10 +20,18 @@ app.use(express.json());
 app.use('/api/upload', uploadRouter);
 app.use('/api/graph', graphRouter);
 app.use('/api/report', reportRouter);
+app.use('/api/demo', demoRouter);
+
+// Debug: log all routes
+app._router.stack.forEach((middleware: any) => {
+  if (middleware.route) {
+    console.log(`Route: ${middleware.route.path}`);
+  }
+});
 
 // Health check
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', message: 'Backend is running and reaches Supabase.' });
+  res.json({ status: 'ok', message: 'Backend is running.' });
 });
 
 // Global error handler — never leak internals to client
@@ -31,7 +40,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });

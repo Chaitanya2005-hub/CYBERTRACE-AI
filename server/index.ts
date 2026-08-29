@@ -22,13 +22,6 @@ app.use('/api/graph', graphRouter);
 app.use('/api/report', reportRouter);
 app.use('/api/demo', demoRouter);
 
-// Debug: log all routes
-app._router.stack.forEach((middleware: any) => {
-  if (middleware.route) {
-    console.log(`Route: ${middleware.route.path}`);
-  }
-});
-
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Backend is running.' });
